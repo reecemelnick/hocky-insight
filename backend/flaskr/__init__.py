@@ -1,10 +1,10 @@
 import os
 
 from flask import Flask
-from utils.scores import ScoreManager
 from flask_cors import CORS
-from flask import request
+from .routes.scores import bp as scores_bp
 
+# flask --app flaskr run --debug --port 8000
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
@@ -27,12 +27,6 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    score_manager = ScoreManager()
-
-    # a simple page that give todays scores
-    @app.route('/scores')
-    def scores():
-        date = request.args.get("date", "2026-01-06")
-        return score_manager.get_scores_specific_date(date)
+    app.register_blueprint(scores_bp)
 
     return app
