@@ -1,0 +1,17 @@
+DROP TABLE IF EXISTS scores;
+
+CREATE TABLE scores (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    home_team TEXT NOT NULL,
+    away_team TEXT NOT NULL,
+    home_score INTEGER,
+    away_score INTEGER
+);
+
+DROP TABLE IF EXISTS elo;
+
+CREATE TABLE elo (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    team_name TEXT UNIQUE NOT NULL,
+    elo INTEGER
+)
