@@ -4,7 +4,7 @@ from flask import Flask
 from flask_cors import CORS
 from .routes.scores import bp as scores_bp
 from .db import close_db
-from .db import init_db_command, seed_db_command, reset_team_elo_command
+from .db import init_db_command, seed_db_command, reset_elo_command, insert_elo_command
 
 # flask --app flaskr run --debug --port 8000
 def create_app(test_config=None):
@@ -31,7 +31,8 @@ def create_app(test_config=None):
 
     app.cli.add_command(init_db_command)
     app.cli.add_command(seed_db_command)
-    app.cli.add_command(reset_team_elo_command)
+    app.cli.add_command(reset_elo_command)
+    app.cli.add_command(insert_elo_command)
 
     app.teardown_appcontext(close_db)
 

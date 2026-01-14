@@ -1,5 +1,5 @@
-import random
 from flaskr.db import get_db
+from flaskr.services.scores import ScoreManager
 
 class Team:
     def __init__(self, name, elo):
@@ -25,40 +25,48 @@ class EloManager:
             (new_elo, team_name)
         )
         db.commit()
-    
-    # function only for testing purposes
-    def simulate_games(self, team_a_name="Oilers", team_b_name="Canucks", num_games=5):
-        
+
+    def run_though_day(self, date):
+        score_manager = ScoreManager() 
+        score_data = score_manager.get_scores_specific_date(date)
+        for item in score_data:
+            self.process_game(item)
+
+    def get_elo_data(self, game):
         db = get_db()
 
-        t_a_row = db.execute(
-            "SELECT elo FROM elo WHERE team_name = ?", (team_a_name,)
+        away_team_row = db.execute(
+            "SELECT elo FROM elo WHERE team_name = ?", (game["away_name"],)
         ).fetchone()
 
-        t_b_row = db.execute(
-            "SELECT elo FROM elo WHERE team_name = ?", (team_b_name,)
+        home_team_row = db.execute(
+            "SELECT elo FROM elo WHERE team_name = ?", (game["home_name"],)
         ).fetchone()
 
-        t_a = Team(team_a_name, t_a_row["elo"] if t_a_row else 1500)
-        t_b = Team(team_b_name, t_b_row["elo"] if t_b_row else 1500)
+        away_team_rating = away_team_row["elo"] 
+        home_team_rating = home_team_row["elo"]
 
-        result = 1
+        return away_team_rating, home_team_rating
+    
+    def process_game(self, game):
 
-        for i in range(5):
-            team_a_prob = self.win_probability(t_a.elo, t_b.elo)
+        away_team_rating, home_team_rating = self.get_elo_data(game)
 
-            num = random.random()
-            if num <= team_a_prob:
-                result = 1
-            else:
-                result = 0
+        team_a = Team(game["away_name"], away_team_rating)
+        team_b = Team(game["home_name"], home_team_rating)
 
-            t_a.elo, t_b.elo = self.update_ratings(t_a.elo, t_b.elo, result)
+        if game["away_score"] > game["home_score"]:
+            result = 1
+        else:
+            result = 0
+
+        # return new elo scores based off old ones - depending on outcome of the match
+        team_a.elo, team_b.elo = self.update_ratings(team_a.elo, team_b.elo, result)
 
         # update new elos in database
-        self.write_new_elo_db(team_a_name, t_a.elo)
-        self.write_new_elo_db(team_b_name, t_b.elo)
+        self.write_new_elo_db(game["away_name"], team_a.elo)
+        self.write_new_elo_db(game["home_name"], team_b.elo)
 
-        print(f"{team_a_name}: {t_a.elo}, {team_b_name}: {t_b.elo}") 
+     
 
     

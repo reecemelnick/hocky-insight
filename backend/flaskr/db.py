@@ -22,9 +22,9 @@ def init_db():
     with current_app.open_resource("schema.sql") as f:
         db.executescript(f.read().decode("utf8"))
 
-@click.command("reset-team-elo")
+@click.command("insert-team-elo")
 @with_appcontext
-def reset_team_elo_command():
+def insert_elo_command():
 
     teams = [
         "Ducks", "Bruins", "Sabres", "Flames", "Hurricanes", "Blackhawks", "Avalanche",
@@ -45,7 +45,19 @@ def reset_team_elo_command():
         )
     
     db.commit()
-    click.echo("Team elo reset")        
+    click.echo("Team elo reset")     
+
+@click.command("reset-elo")
+@with_appcontext
+def reset_elo_command():
+    db = get_db()
+    db.execute(
+        "UPDATE elo SET elo = ?",
+        (1500,)
+    )
+    
+    db.commit()
+    click.echo("Team elo reset")    
 
 @click.command("seed-db")
 @with_appcontext

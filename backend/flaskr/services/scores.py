@@ -19,7 +19,6 @@ class ScoreManager:
             away_logo = away_team["logo"]
             home_logo = home_team["logo"]
             winner = self.get_winner(home_team, away_team)
-            print(f"Winner: {winner}")
 
             game_scores.append(
                     {
