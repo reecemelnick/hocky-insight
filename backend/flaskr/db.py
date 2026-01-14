@@ -31,7 +31,7 @@ def insert_elo_command():
         "Blue Jackets", "Stars", "Red Wings", "Oilers", "Panthers", "Kings", "Wild",
         "Canadiens", "Predators", "Devils", "Islanders", "Rangers", "Senators",
         "Flyers", "Penguins", "Sharks", "Kraken", "Blues", "Lightning", "Maple Leafs",
-        "Utah Hockey Club", "Canucks", "Golden Knights", "Capitals", "Jets"
+        "Mammoth", "Canucks", "Golden Knights", "Capitals", "Jets"
     ]   
 
     db = get_db()

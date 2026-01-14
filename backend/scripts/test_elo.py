@@ -11,5 +11,5 @@ app = create_app()
 with app.app_context():
     elo = EloManager()
     sim = SimulationManager()
-    sim.simulate_games(num_games=1)
-    # elo.run_though_day("2025-11-10")
+    # sim.simulate_games(num_games=1)
+    elo.run_though_day("2025-11-10")

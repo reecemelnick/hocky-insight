@@ -1,5 +1,6 @@
 from nhlpy import NHLClient
 from datetime import datetime, timedelta
+from .eloRetriever import EloRetriever
 
 class ScoreManager:
 
@@ -12,13 +13,17 @@ class ScoreManager:
         return scores
     
     def parse_scores(self, games):
+        eloR = EloRetriever()
+        
         game_scores = []
         for game in games:
             away_team = game["awayTeam"]
             home_team = game["homeTeam"]
             away_logo = away_team["logo"]
             home_logo = home_team["logo"]
-            winner = self.get_winner(home_team, away_team)
+
+            print("AWAY:", eloR.get_elo_for_team(away_team["name"]["default"])["elo"])
+            print("HOME:", eloR.get_elo_for_team(home_team["name"]["default"])["elo"])
 
             game_scores.append(
                     {
@@ -28,6 +33,8 @@ class ScoreManager:
                         "home_score": home_team["score"],
                         "away_logo": away_logo,
                         "home_logo": home_logo,
+                        "away_elo": eloR.get_elo_for_team(away_team["name"]['default'])["elo"],
+                        "home_elo": eloR.get_elo_for_team(home_team["name"]['default'])["elo"],
                     }
                 )
         return game_scores
@@ -53,6 +60,7 @@ class ScoreManager:
 
         return self.parse_scores(games)
     
+    # FIX THIS
     def get_last_ten(self, team):
         
         results = []
@@ -79,8 +87,7 @@ class ScoreManager:
             current_date += timedelta(days=1)
 
         return results
-    
-    # FIX THIS
+
     
 s = ScoreManager()
 # print(s.get_last_ten("Oilers"))

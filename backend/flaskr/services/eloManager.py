@@ -1,5 +1,6 @@
 from flaskr.db import get_db
 from flaskr.services.scores import ScoreManager
+from flaskr.services.eloRetriever import EloRetriever
 
 class Team:
     def __init__(self, name, elo):
@@ -32,16 +33,11 @@ class EloManager:
         for item in score_data:
             self.process_game(item)
 
+
     def get_elo_data(self, game):
-        db = get_db()
-
-        away_team_row = db.execute(
-            "SELECT elo FROM elo WHERE team_name = ?", (game["away_name"],)
-        ).fetchone()
-
-        home_team_row = db.execute(
-            "SELECT elo FROM elo WHERE team_name = ?", (game["home_name"],)
-        ).fetchone()
+        eloR = EloRetriever()
+        away_team_row = eloR.get_elo_for_team(game["away_name"])
+        home_team_row = eloR.get_elo_for_team(game["home_name"])
 
         away_team_rating = away_team_row["elo"] 
         home_team_rating = home_team_row["elo"]
@@ -66,7 +62,5 @@ class EloManager:
         # update new elos in database
         self.write_new_elo_db(game["away_name"], team_a.elo)
         self.write_new_elo_db(game["home_name"], team_b.elo)
-
-     
 
     
