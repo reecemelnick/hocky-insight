@@ -57,7 +57,15 @@ def reset_elo_command():
     )
     
     db.commit()
-    click.echo("Team elo reset")    
+    click.echo("Team elo reset")   
+
+@click.command("clear-last-date")
+@with_appcontext
+def clear_last_date_command():
+    db = get_db()
+    db.execute("DELETE FROM updates")
+    db.commit()
+    click.echo("Cleard last date")    
 
 @click.command("seed-db")
 @with_appcontext

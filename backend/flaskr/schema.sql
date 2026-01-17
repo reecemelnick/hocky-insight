@@ -14,4 +14,11 @@ CREATE TABLE elo (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     team_name TEXT UNIQUE NOT NULL,
     elo INTEGER
-)
+);
+
+DROP TABLE IF EXISTS updates;
+
+CREATE TABLE updates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    last_update TEXT
+);

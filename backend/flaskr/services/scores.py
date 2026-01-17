@@ -22,15 +22,19 @@ class ScoreManager:
             away_logo = away_team["logo"]
             home_logo = home_team["logo"]
 
-            print("AWAY:", eloR.get_elo_for_team(away_team["name"]["default"])["elo"])
-            print("HOME:", eloR.get_elo_for_team(home_team["name"]["default"])["elo"])
+            if "score" not in away_team or "score" not in home_team:
+                away_team_score = ""
+                home_team_score = ""
+            else:
+                away_team_score = away_team["score"]
+                home_team_score = home_team["score"]
 
             game_scores.append(
                     {
                         "away_name": away_team["name"]['default'],
-                        "away_score": away_team["score"], 
+                        "away_score": away_team_score, 
                         "home_name": home_team["name"]['default'],
-                        "home_score": home_team["score"],
+                        "home_score": home_team_score,
                         "away_logo": away_logo,
                         "home_logo": home_logo,
                         "away_elo": eloR.get_elo_for_team(away_team["name"]['default'])["elo"],
@@ -87,7 +91,3 @@ class ScoreManager:
             current_date += timedelta(days=1)
 
         return results
-
-    
-s = ScoreManager()
-# print(s.get_last_ten("Oilers"))

@@ -4,7 +4,8 @@ from flask import Flask
 from flask_cors import CORS
 from .routes.scores import bp as scores_bp
 from .db import close_db
-from .db import init_db_command, seed_db_command, reset_elo_command, insert_elo_command
+from .db import init_db_command, seed_db_command, reset_elo_command, insert_elo_command, clear_last_date_command
+from .services.updateManager import UpdateManager
 
 # flask --app flaskr run --debug --port 8000
 def create_app(test_config=None):
@@ -15,6 +16,9 @@ def create_app(test_config=None):
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
     )
+
+    # update manager used to check for new day - if new day, process the events
+    updateManager = UpdateManager()
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
@@ -28,11 +32,17 @@ def create_app(test_config=None):
         os.makedirs(app.instance_path)
     except OSError:
         pass
+    
+    # check for new day
+    @app.before_request
+    def daily_check():
+        updateManager.run_daily_tasks_if_needed()
 
     app.cli.add_command(init_db_command)
     app.cli.add_command(seed_db_command)
     app.cli.add_command(reset_elo_command)
     app.cli.add_command(insert_elo_command)
+    app.cli.add_command(clear_last_date_command)
 
     app.teardown_appcontext(close_db)
 

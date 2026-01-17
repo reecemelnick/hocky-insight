@@ -27,12 +27,12 @@ class EloManager:
         )
         db.commit()
 
+    # more use for testing and getting back logged games
     def run_though_day(self, date):
         score_manager = ScoreManager() 
         score_data = score_manager.get_scores_specific_date(date)
         for item in score_data:
             self.process_game(item)
-
 
     def get_elo_data(self, game):
         eloR = EloRetriever()
@@ -62,5 +62,3 @@ class EloManager:
         # update new elos in database
         self.write_new_elo_db(game["away_name"], team_a.elo)
         self.write_new_elo_db(game["home_name"], team_b.elo)
-
-    
