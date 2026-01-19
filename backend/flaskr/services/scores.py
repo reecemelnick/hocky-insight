@@ -37,8 +37,8 @@ class ScoreManager:
                         "home_score": home_team_score,
                         "away_logo": away_logo,
                         "home_logo": home_logo,
-                        "away_elo": eloR.get_elo_for_team(away_team["name"]['default'])["elo"],
-                        "home_elo": eloR.get_elo_for_team(home_team["name"]['default'])["elo"],
+                        "away_elo": int(eloR.get_elo_for_team(away_team["name"]['default'])["elo"]),
+                        "home_elo": int(eloR.get_elo_for_team(home_team["name"]['default'])["elo"]),
                     }
                 )
         return game_scores

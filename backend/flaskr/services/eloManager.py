@@ -1,4 +1,5 @@
-from flaskr.db import get_db
+from flaskr.db import get_db, reset_elo_helper
+from datetime import date, timedelta
 from flaskr.services.scores import ScoreManager
 from flaskr.services.eloRetriever import EloRetriever
 
@@ -31,6 +32,9 @@ class EloManager:
     def run_though_day(self, date):
         score_manager = ScoreManager() 
         score_data = score_manager.get_scores_specific_date(date)
+        if score_data is None:
+            return
+
         for item in score_data:
             self.process_game(item)
 
@@ -62,3 +66,14 @@ class EloManager:
         # update new elos in database
         self.write_new_elo_db(game["away_name"], team_a.elo)
         self.write_new_elo_db(game["home_name"], team_b.elo)
+
+    def set_elo_from_season_start(self):
+        season_start = date(2025, 10, 11)
+        end_date = date.today()
+
+        reset_elo_helper() # make sure teams start back at base elo
+
+        curr_date = season_start
+        while curr_date <= end_date:
+            self.run_though_day(curr_date)
+            curr_date += timedelta(days=1)
