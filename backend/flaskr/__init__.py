@@ -46,6 +46,6 @@ def create_app(test_config=None):
 
     app.teardown_appcontext(close_db)
 
-    app.register_blueprint(scores_bp)
+    app.register_blueprint(scores_bp, url_prefix="/api")
 
     return app
