@@ -1,12 +1,12 @@
 from flask import Blueprint, request
 from ..services.scores import ScoreManager 
 
-bp = Blueprint("scores", __name__, url_prefix="/scores")
+bp = Blueprint("scores", __name__)
 
 score_manager = ScoreManager() 
     
 # a simple page that give todays scores
-@bp.route("", methods=["GET"])
+@bp.route("/scores", methods=["GET"])
 def scores():
     date = request.args.get("date")
     if date is None:
