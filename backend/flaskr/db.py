@@ -68,7 +68,6 @@ def reset_elo_helper():
     
     db.commit()
 
-
 @click.command("clear-last-date")
 @with_appcontext
 def clear_last_date_command():
@@ -76,20 +75,6 @@ def clear_last_date_command():
     db.execute("DELETE FROM updates")
     db.commit()
     click.echo("Cleard last date")    
-
-@click.command("seed-db")
-@with_appcontext
-def seed_db_command():
-    db = get_db()
-    db.execute(
-        """
-        INSERT INTO scores (home_team, away_team, home_score, away_score)
-        VALUES (?, ?, ?, ?)
-        """,
-        ("TOR", "MTL", 4, 2),
-    )
-    db.commit()
-    click.echo("Database seeded.")
 
 @click.command("init-db")
 @with_appcontext

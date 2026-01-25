@@ -25,9 +25,16 @@ class ScoreManager:
             if "score" not in away_team or "score" not in home_team:
                 away_team_score = ""
                 home_team_score = ""
+                winner = ""
             else:
                 away_team_score = away_team["score"]
                 home_team_score = home_team["score"]
+                winner = self.get_winner(away_team, home_team)
+
+            away_elo = int(eloR.get_elo_for_team(away_team["name"]['default'])["elo"])
+            home_elo = int(eloR.get_elo_for_team(home_team["name"]['default'])["elo"])
+
+            
 
             game_scores.append(
                     {
@@ -37,13 +44,15 @@ class ScoreManager:
                         "home_score": home_team_score,
                         "away_logo": away_logo,
                         "home_logo": home_logo,
-                        "away_elo": int(eloR.get_elo_for_team(away_team["name"]['default'])["elo"]),
-                        "home_elo": int(eloR.get_elo_for_team(home_team["name"]['default'])["elo"]),
+                        "away_elo": away_elo,
+                        "home_elo": home_elo,
+                        "winner": winner,
                     }
                 )
+            
         return game_scores
     
-    def get_winner(self, home_team, away_team):
+    def get_winner(self, away_team, home_team):
         if home_team["score"] > away_team["score"]:
             return home_team["name"]['default']
         else:
@@ -64,30 +73,4 @@ class ScoreManager:
 
         return self.parse_scores(games)
     
-    # FIX THIS
-    def get_last_ten(self, team):
-        
-        results = []
 
-        today = datetime.today()
-        start_date = today - timedelta(days=3)
-        end_date = today - timedelta(days=1)
-
-        current_date = start_date
-        while current_date <= end_date:
-            date_str = current_date.strftime("%Y-%m-%d")
-    
-            try:
-                scores_dict = self.client.game_center.daily_scores(date=date_str)
-            except Exception as e:
-                current_date += timedelta(days=1)
-                continue
-
-            games = scores_dict.get("games" , [])
-            for game in games:
-                if game["homeTeam"]["name"]['default'] == team or game["awayTeam"]["name"]['default'] == team:
-                    results.append(game)
-                
-            current_date += timedelta(days=1)
-
-        return results

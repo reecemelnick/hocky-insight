@@ -9,3 +9,13 @@ class EloRetriever:
         ).fetchone()
 
         return team
+    
+    def get_ranked_by_elo(self):
+        db = get_db()
+
+        ranked = db.execute(
+            "SELECT team_name, elo FROM elo ORDER BY elo DESC;"
+        )
+
+        return ranked
+    
