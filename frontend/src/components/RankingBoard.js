@@ -1,4 +1,6 @@
-function RankingBoard( {rankings} ) {
+import Emoji from "./Emoji";
+
+function RankingBoard( {rankings, seeds} ) {
 
     return (
         <div style={{ marginBottom: "20px" }}>
@@ -13,7 +15,7 @@ function RankingBoard( {rankings} ) {
                 <tbody>
                     {rankings.map((item, index) => (
                         <tr key={index}>
-                            <td>{index + 1}</td>
+                            <td><Emoji symbol={seeds[item.team_name] > (index+1) ? "⬆️ " : seeds[item.team_name] < (index+1) ? "🔻 " : "🟰 "} />{index + 1}</td>
                             <td>{item.team_name}</td>
                             <td>{item.elo}</td>
                         </tr>
