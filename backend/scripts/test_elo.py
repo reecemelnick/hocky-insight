@@ -9,6 +9,10 @@ from flaskr.services.scores import ScoreManager
 from flaskr.services.updateManager import UpdateManager
 from flaskr.services.rankings import RankingManager
 from flaskr.services.nhlStandings import StandingsManager
+from nhlpy import NHLClient
+import pandas as pd
+import requests
+
 
 app = create_app()
 
@@ -20,10 +24,13 @@ with app.app_context():
     rank = RankingManager()
     standings = StandingsManager()
     standings.get_standings()
-    # rank.get_ranked_teams()
-    # elo.set_elo_from_season_start()
-    # up.get_last_date()
-    # sim.simulate_games(num_games=1)
-    # elo.run_though_day("2025-11-10")
-    # print(elo.check_new_day("2026-01-15"))
-    # print(score.get_scores_specific_date("2026-01-16"))
+
+    
+    # client = NHLClient(debug=True)
+    # scores = client.game_center.daily_scores()
+
+    # games = pd.json_normalize(scores["games"])
+    # print(games.head())
+    # print(games.keys())
+
+    # df = pd.DataFrame(scores)

@@ -3,6 +3,7 @@ from flask import Flask
 from flask_cors import CORS
 from .routes.scores import bp as scores_bp
 from .routes.rankings import bp as rankings_bp
+from .routes.nhlStandings import bp as standings_bp
 from .db import init_db_command, reset_elo_command, insert_elo_command, clear_last_date_command, close_db
 from .services.updateManager import UpdateManager
 
@@ -45,6 +46,7 @@ def create_app(test_config=None):
 
     app.register_blueprint(scores_bp, url_prefix="/api")
     app.register_blueprint(rankings_bp, url_prefix="/api")
+    app.register_blueprint(standings_bp, url_prefix="/api")
 
     return app
 

@@ -6,6 +6,19 @@ class StandingsManager:
 
     def get_standings(self):
         standings = self.client.standings.league_standings()
-        print(standings)
+        teams = standings["standings"]
 
-        # maybe use pandas
+        standings = []
+
+        for team in teams:
+            standings.append(
+                {
+                    "team_name": team["teamCommonName"]["default"],
+                    "wins": team["regulationPlusOtWins"],
+                    "loss": team["losses"],
+                    "otLoss": team["otLosses"],
+                    "points": team["points"]
+                }
+            )
+
+        return standings
