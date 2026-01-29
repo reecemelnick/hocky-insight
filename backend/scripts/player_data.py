@@ -16,12 +16,34 @@ app = create_app()
 
 with app.app_context():
 
-    def get_all_players():
+    def get_all_teams(date):
+        team_abbrevs = []
+        
+        res = requests.get("https://api-web.nhle.com/v1/standings/{}".format(date))
+        standings = res.json()
+
+        for team in standings["standings"]:
+            team_abbrevs.append(team["teamAbbrev"]["default"])
+
+        return team_abbrevs
+
+    # start with players who have 100 games 
+    def get_eligible_players_for_team(team, year):
         players = []
-        # players.append(get_player_stats())
 
+        res = requests.get("https://api-web.nhle.com/v1/roster/{}/{}".format(team, year))
+        team_roster = res.json()
+
+        for forward in team_roster["forwards"]:
+            players.append(forward["id"])
+
+        for defensemen in team_roster["defensemen"]:
+            players.append(defensemen["id"])
+        
+        return players
+
+    # currently restricted to seasons 2021-2024 
     def get_player_stats(id):
-
         seasons = []
 
         player_obj = {}
@@ -29,7 +51,7 @@ with app.app_context():
         player = res.json()
 
         for season_stats in player["seasonTotals"]:
-            if season_stats["season"] == 20212022 and season_stats["gameTypeId"] == 2:
+            if (season_stats["season"] == 20212022 or season_stats["season"] == 20222023 or season_stats["season"] == 20232024) and season_stats["gameTypeId"] == 2:
                 print("adding target year")
                 seasons.append(season_stats)
         
@@ -45,16 +67,23 @@ with app.app_context():
         player_obj["shots_1"] = seasons[0]["shots"]
         player_obj["avg_toi_1"] = seasons[0]["avgToi"]
         player_obj["plus_minus_1"] = seasons[0]["plusMinus"]
+        player_obj["games_played_1"] = seasons[0]["gamesPlayed"]
         player_obj["team_1"] = seasons[0]["teamName"]["default"]
 
         # second season
+        player_obj["goals_2"] = seasons[1]["goals"]
+        player_obj["assists_2"] = seasons[1]["assists"]
+        player_obj["shots_2"] = seasons[1]["shots"]
+        player_obj["avg_toi_2"] = seasons[1]["avgToi"]
+        player_obj["plus_minus_2"] = seasons[1]["plusMinus"]
+        player_obj["games_played_2"] = seasons[1]["gamesPlayed"]
+        player_obj["team_2"] = seasons[1]["teamName"]["default"]
          
         # ppg third season
+        player_obj["ppg_3"] = (seasons[2]["points"] / seasons[2]["gamesPlayed"])
         
-        # df = pd.DataFrame(player_obj)
-        # print(df)
-        print(player_obj)
         return player_obj
     
-    
-    get_player_stats(8478402)
+    # get_player_stats(8478402)
+    # get_eligible_players_for_team("EDM", "20222023")
+    get_all_teams("2023-11-10")
