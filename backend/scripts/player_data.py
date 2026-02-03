@@ -54,7 +54,6 @@ with app.app_context():
         for defensemen in team_roster["defensemen"]:
             players.append(defensemen["id"])
 
-
         # call filter_players
         
         return players
@@ -62,15 +61,30 @@ with app.app_context():
     # must have 50 games played in each season from 2021-2023
     def filter_players(players):
 
-        player_1 = '8479338' # random bakersfield guy
-        player_2 = '8477498' # darnell
+        valid_players = []
+    
+        for player in players:
+            res = requests.get("https://api-web.nhle.com/v1/player/{}/landing".format(player))
+            player_data = res.json()
 
-        res = requests.get("https://api-web.nhle.com/v1/player/{}/landing".format(player_2))
-        player = res.json()
+            valid_seasons = []
+            valid = True
+            for season in player_data["seasonTotals"]:
+                if season["leagueAbbrev"] == "NHL" and season["gameTypeId"] == 2 and (season["season"] == 20212022 or season["season"] == 20222023 or season["season"] == 20232024): 
+                    valid_seasons.append(season)
+            if len(valid_seasons) < 3:
+                print("Not enough seasons")
+                continue
+            
+            for season in valid_seasons:
+                if season["gamesPlayed"] < 50:
+                    valid = False
 
-        seasons = []
-        # for season in player["seasonTotals"]:
-        #     if season[""]
+            if valid:
+                valid_players.append(player)
+                print(player_data["lastName"])
+
+        return valid_players
 
     # currently restricted to seasons 2021-2024 
     def get_player_stats(id):
@@ -81,8 +95,7 @@ with app.app_context():
         player = res.json()
 
         for season_stats in player["seasonTotals"]:
-            if (season_stats["season"] == 20212022 or season_stats["season"] == 20222023 or season_stats["season"] == 20232024) and season_stats["gameTypeId"] == 2:
-                print("adding target year")
+            if (season_stats["season"] == 20212022 or season_stats["season"] == 20222023 or season_stats["season"] == 20232024) and season_stats["gameTypeId"] == 2 and season_stats["leagueAbbrev"] == "NHL":
                 seasons.append(season_stats)
         
         player_obj["name"] = f"{player["firstName"]["default"]} {player["lastName"]["default"]}"
@@ -90,6 +103,10 @@ with app.app_context():
         player_obj["id"] = player["playerId"] 
         player_obj["height"] = player["heightInInches"]
         player_obj["weight"] = player["weightInPounds"]
+
+        print(player["lastName"]["default"])
+        print(seasons[1]["season"])
+        print(seasons[1]["shots"])
 
         # first season
         player_obj["goals_1"] = seasons[0]["goals"]
@@ -116,14 +133,19 @@ with app.app_context():
     
     # fill_dataframe()
 
-    oilers = []
-    oilers.append(get_eligible_players_for_team("EDM", 20222023))
-    print(oilers)
+    players = []
+    players.append(get_eligible_players_for_team("EDM", 20222023))
 
-    # player_stats = []
-    # for oiler in oilers:
-    #     player_stats.append(get_player_stats(oiler))
-    # print(player_stats)
+    valid_players = filter_players(players[0])
+    print(valid_players)
+
+    player_stats = []
+    for player in valid_players:
+        player_stats.append(get_player_stats(player))
+
+
+    df = pd.DataFrame(player_stats)
+    print(df)
 
     
 
