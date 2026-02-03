@@ -1,0 +1,13 @@
+name,country,id,height,weight,birthDate,goals_1,assists_1,shots_1,avg_toi_1,plus_minus_1,games_played_1,team_1,goals_2,assists_2,shots_2,avg_toi_2,plus_minus_2,games_played_2,team_2,ppg_3
+Leon Draisaitl,DEU,8477934,74,209,1995-10-27,55,55,278,22:21,17,80,Edmonton Oilers,52,76,247,21:44,7,80,Edmonton Oilers,1.308641975308642
+Warren Foegele,CAN,8477998,74,205,1996-04-01,12,14,142,12:37,-9,82,Edmonton Oilers,13,15,126,12:42,7,67,Edmonton Oilers,0.5
+Zach Hyman,CAN,8475786,73,206,1992-06-09,27,27,213,19:28,-9,76,Edmonton Oilers,36,47,276,20:09,13,79,Edmonton Oilers,0.9625
+Mattias Janmark,SWE,8477406,74,205,1992-12-08,9,16,89,14:21,3,67,Vegas Golden Knights,10,15,79,14:40,9,66,Edmonton Oilers,0.16901408450704225
+Connor McDavid,CAN,8478402,73,194,1997-01-13,44,79,314,22:04,28,80,Edmonton Oilers,64,89,352,22:23,22,82,Edmonton Oilers,1.736842105263158
+Ryan McLeod,CAN,8480802,75,204,1999-09-21,9,12,82,12:46,-2,71,Edmonton Oilers,11,12,78,14:11,4,57,Edmonton Oilers,0.37037037037037035
+Ryan Nugent-Hopkins,CAN,8476454,73,192,1993-04-12,11,39,154,19:19,3,63,Edmonton Oilers,37,67,201,19:48,12,82,Edmonton Oilers,0.8375
+Derek Ryan,USA,8478585,70,185,1986-12-29,10,12,72,11:26,-4,75,Edmonton Oilers,13,7,92,11:10,11,80,Edmonton Oilers,0.17142857142857143
+Kailer Yamamoto,USA,8479977,69,178,1998-09-29,20,21,114,16:52,-1,81,Edmonton Oilers,10,15,97,16:35,12,58,Edmonton Oilers,0.2711864406779661
+Evan Bouchard,CAN,8480803,75,192,1999-10-20,12,31,205,19:48,10,81,Edmonton Oilers,8,32,156,18:31,6,82,Edmonton Oilers,1.0123456790123457
+Cody Ceci,CAN,8476879,75,210,1993-12-21,5,23,102,20:54,8,78,Edmonton Oilers,1,14,88,20:08,11,80,Edmonton Oilers,0.31645569620253167
+Darnell Nurse,CAN,8477498,76,215,1995-02-04,9,26,203,25:03,18,71,Edmonton Oilers,12,31,203,23:30,26,82,Edmonton Oilers,0.3950617283950617

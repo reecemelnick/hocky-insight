@@ -54,9 +54,9 @@ with app.app_context():
         for defensemen in team_roster["defensemen"]:
             players.append(defensemen["id"])
 
-        # call filter_players
+        valid_players = filter_players(players)
         
-        return players
+        return valid_players
     
     # must have 50 games played in each season from 2021-2023
     def filter_players(players):
@@ -72,8 +72,8 @@ with app.app_context():
             for season in player_data["seasonTotals"]:
                 if season["leagueAbbrev"] == "NHL" and season["gameTypeId"] == 2 and (season["season"] == 20212022 or season["season"] == 20222023 or season["season"] == 20232024): 
                     valid_seasons.append(season)
+
             if len(valid_seasons) < 3:
-                print("Not enough seasons")
                 continue
             
             for season in valid_seasons:
@@ -82,7 +82,6 @@ with app.app_context():
 
             if valid:
                 valid_players.append(player)
-                print(player_data["lastName"])
 
         return valid_players
 
@@ -103,10 +102,7 @@ with app.app_context():
         player_obj["id"] = player["playerId"] 
         player_obj["height"] = player["heightInInches"]
         player_obj["weight"] = player["weightInPounds"]
-
-        print(player["lastName"]["default"])
-        print(seasons[1]["season"])
-        print(seasons[1]["shots"])
+        player_obj["birth_date"] = player["birthDate"] # working?
 
         # first season
         player_obj["goals_1"] = seasons[0]["goals"]
@@ -131,21 +127,47 @@ with app.app_context():
         
         return player_obj
     
-    # fill_dataframe()
+    def format_ice_time(time):
+        time = time.split(":")
+        time = float(time[0] + str((int(time[1])/60))[1:])
+        time = round(time, 2)
+        return time
 
-    players = []
-    players.append(get_eligible_players_for_team("EDM", 20222023))
+    # once ready take in df
+    def normalize_data():
 
-    valid_players = filter_players(players[0])
-    print(valid_players)
+        df = pd.read_csv('oilers.csv')
+        df["points_1"] = (df["goals_1"] + df["assists_1"]) / df["games_played_1"]
+        df["points_2"] = (df["goals_2"] + df["assists_2"]) / df["games_played_2"]
+        df["goals_1"] = df["goals_1"] / df["games_played_1"]
+        df["goals_2"] = df["goals_2"] / df["games_played_2"]
+        df["shots_1"] = df["shots_1"] / df["games_played_1"]
+        df["shots_2"] = df["shots_2"] / df["games_played_2"]
+        df["games_played_1"] = df["games_played_1"] / 82
+        df["games_played_2"] = df["games_played_2"] / 82
+        df["avg_toi_1"] = df["avg_toi_1"].apply(format_ice_time)
+        df["avg_toi_2"] = df["avg_toi_2"].apply(format_ice_time)
+        # add birth data and extract age
+
+        print(df)
+
+    valid_players = get_eligible_players_for_team("EDM", 20222023)
 
     player_stats = []
     for player in valid_players:
         player_stats.append(get_player_stats(player))
 
-
     df = pd.DataFrame(player_stats)
-    print(df)
+    df.to_csv('oilers.csv', index=False)
+    # print(df)
+
+    # normalize_data()
+
+    # time = "21:44"
+    # time = int(str(time).split(':')[0])
+
+
+    # just start with one team to get a benchmark
 
     
 
