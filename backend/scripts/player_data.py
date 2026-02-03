@@ -16,6 +16,20 @@ app = create_app()
 
 with app.app_context():
 
+    def fill_dataframe():
+        teams = get_all_teams("2023-11-10")
+
+        players = []
+        for team in teams:
+            players.append(get_eligible_players_for_team(team, 20222023))
+
+        player_stats = []
+        for player in players:
+            player_stats.append(get_player_stats(player))
+
+        df = pd.DataFrame(player_stats)
+        print(df)
+
     def get_all_teams(date):
         team_abbrevs = []
         
@@ -27,7 +41,7 @@ with app.app_context():
 
         return team_abbrevs
 
-    # start with players who have 100 games 
+    # start with players who have 100 games # TODO parse eligible
     def get_eligible_players_for_team(team, year):
         players = []
 
@@ -39,8 +53,24 @@ with app.app_context():
 
         for defensemen in team_roster["defensemen"]:
             players.append(defensemen["id"])
+
+
+        # call filter_players
         
         return players
+    
+    # must have 50 games played in each season from 2021-2023
+    def filter_players(players):
+
+        player_1 = '8479338' # random bakersfield guy
+        player_2 = '8477498' # darnell
+
+        res = requests.get("https://api-web.nhle.com/v1/player/{}/landing".format(player_2))
+        player = res.json()
+
+        seasons = []
+        # for season in player["seasonTotals"]:
+        #     if season[""]
 
     # currently restricted to seasons 2021-2024 
     def get_player_stats(id):
@@ -84,6 +114,16 @@ with app.app_context():
         
         return player_obj
     
-    # get_player_stats(8478402)
-    # get_eligible_players_for_team("EDM", "20222023")
-    get_all_teams("2023-11-10")
+    # fill_dataframe()
+
+    oilers = []
+    oilers.append(get_eligible_players_for_team("EDM", 20222023))
+    print(oilers)
+
+    # player_stats = []
+    # for oiler in oilers:
+    #     player_stats.append(get_player_stats(oiler))
+    # print(player_stats)
+
+    
+
