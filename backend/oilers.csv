@@ -1,4 +1,4 @@
-name,country,id,height,weight,birthDate,goals_1,assists_1,shots_1,avg_toi_1,plus_minus_1,games_played_1,team_1,goals_2,assists_2,shots_2,avg_toi_2,plus_minus_2,games_played_2,team_2,ppg_3
+name,country,id,height,weight,birth_date,goals_1,assists_1,shots_1,avg_toi_1,plus_minus_1,games_played_1,team_1,goals_2,assists_2,shots_2,avg_toi_2,plus_minus_2,games_played_2,team_2,ppg_3
 Leon Draisaitl,DEU,8477934,74,209,1995-10-27,55,55,278,22:21,17,80,Edmonton Oilers,52,76,247,21:44,7,80,Edmonton Oilers,1.308641975308642
 Warren Foegele,CAN,8477998,74,205,1996-04-01,12,14,142,12:37,-9,82,Edmonton Oilers,13,15,126,12:42,7,67,Edmonton Oilers,0.5
 Zach Hyman,CAN,8475786,73,206,1992-06-09,27,27,213,19:28,-9,76,Edmonton Oilers,36,47,276,20:09,13,79,Edmonton Oilers,0.9625

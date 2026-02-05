@@ -5,13 +5,6 @@ from flaskr import create_app
 import pandas as pd
 import requests
 
-from nhlpy.api.query.builder import QueryBuilder, QueryContext
-from nhlpy.nhl_client import NHLClient
-from nhlpy.api.query.filters.draft import DraftQuery
-from nhlpy.api.query.filters.season import SeasonQuery
-from nhlpy.api.query.filters.game_type import GameTypeQuery
-from nhlpy.api.query.filters.position import PositionQuery, PositionTypes
-
 app = create_app()
 
 with app.app_context():
@@ -102,7 +95,7 @@ with app.app_context():
         player_obj["id"] = player["playerId"] 
         player_obj["height"] = player["heightInInches"]
         player_obj["weight"] = player["weightInPounds"]
-        player_obj["birth_date"] = player["birthDate"] # working?
+        player_obj["birth_date"] = player["birthDate"]
 
         # first season
         player_obj["goals_1"] = seasons[0]["goals"]
@@ -132,9 +125,13 @@ with app.app_context():
         time = float(time[0] + str((int(time[1])/60))[1:])
         time = round(time, 2)
         return time
+    
+    def get_age_from_date():
+        date = "1986-12-29"
+
 
     # once ready take in df
-    def normalize_data():
+    def process_data():
 
         df = pd.read_csv('oilers.csv')
         df["points_1"] = (df["goals_1"] + df["assists_1"]) / df["games_played_1"]
@@ -147,27 +144,33 @@ with app.app_context():
         df["games_played_2"] = df["games_played_2"] / 82
         df["avg_toi_1"] = df["avg_toi_1"].apply(format_ice_time)
         df["avg_toi_2"] = df["avg_toi_2"].apply(format_ice_time)
-        # add birth data and extract age
+        df["age"] = 2024 - df["birth_date"].apply(lambda s: int(s.split("-")[0]))
 
-        print(df)
+        return df
 
-    valid_players = get_eligible_players_for_team("EDM", 20222023)
+    # valid_players = get_eligible_players_for_team("EDM", 20222023)
 
-    player_stats = []
-    for player in valid_players:
-        player_stats.append(get_player_stats(player))
+    # player_stats = []
+    # for player in valid_players:
+    #     player_stats.append(get_player_stats(player))
 
-    df = pd.DataFrame(player_stats)
-    df.to_csv('oilers.csv', index=False)
+    # df = pd.DataFrame(player_stats)
+    # df.to_csv('oilers.csv', index=False)
     # print(df)
 
-    # normalize_data()
-
-    # time = "21:44"
-    # time = int(str(time).split(':')[0])
-
+    df = process_data()
+    df_final = df[["games_played_1", "games_played_2", "goals_1", "goals_2",
+                   "height", "plus_minus_1", "plus_minus_2", "ppg_3",
+                   "shots_1", "shots_2", "avg_toi_1", "avg_toi_2",
+                   "weight", "points_1", "points_2", "age"]]
+    
+    # transform position columns into one-hot encoded features
+    df_final = pd.get_dummies(df_final)
+    df_final.to_csv('oilers_final.csv', index=False)
 
     # just start with one team to get a benchmark
+    
 
     
 
+ 
