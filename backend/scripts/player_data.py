@@ -96,6 +96,7 @@ with app.app_context():
         player_obj["height"] = player["heightInInches"]
         player_obj["weight"] = player["weightInPounds"]
         player_obj["birth_date"] = player["birthDate"]
+        player_obj["position"] = player["position"]
 
         # first season
         player_obj["goals_1"] = seasons[0]["goals"]
@@ -160,12 +161,12 @@ with app.app_context():
 
     df = process_data()
     df_final = df[["games_played_1", "games_played_2", "goals_1", "goals_2",
-                   "height", "plus_minus_1", "plus_minus_2", "ppg_3",
+                   "height", "plus_minus_1", "plus_minus_2", "position", "ppg_3",
                    "shots_1", "shots_2", "avg_toi_1", "avg_toi_2",
                    "weight", "points_1", "points_2", "age"]]
     
     # transform position columns into one-hot encoded features
-    df_final = pd.get_dummies(df_final)
+    df_final = pd.get_dummies(df_final, columns=["position"])
     df_final.to_csv('oilers_final.csv', index=False)
 
     # just start with one team to get a benchmark

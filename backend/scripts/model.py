@@ -50,16 +50,16 @@ plt.savefig('plot.png')
 
 df_pred = process_data()
 df_pred_final = df_pred[["name","games_played_1", "games_played_2", "goals_1", "goals_2",
-            "height", "plus_minus_1", "plus_minus_2", "ppg_3",
+            "height", "plus_minus_1", "plus_minus_2", "position",
             "shots_1", "shots_2", "avg_toi_1", "avg_toi_2",
             "weight", "points_1", "points_2", "age"]]
-# df_pred_final = pd.get_dummies(df_pred_final)
 
+df_pred_final = pd.get_dummies(df_pred_final, columns=["position"])
 df_pred_final = normalize_data(df_pred_final)
 
 predictions = df_pred_final[["name"]]
 predictions["first name"] = predictions["name"].apply(lambda s: s.split(' ')[0])
 predictions["name"] = predictions["name"].apply(lambda s: s.split(' ')[1])
-# predictions["ppg"] = model.predict(df_pred_final.drop('name', axis=1))
+predictions["ppg"] = model.predict(df_pred_final.drop('name', axis=1))
 
-print(predictions)
+print(predictions.sort_values(by="ppg"))
