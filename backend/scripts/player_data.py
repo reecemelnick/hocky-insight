@@ -10,7 +10,7 @@ app = create_app()
 with app.app_context():
 
     def fill_dataframe():
-        teams = get_all_teams("2023-11-10")
+        teams = get_all_teams("2023-11-10") # just use current-ish date to get team codes
 
         players = []
         for team in teams:
@@ -106,6 +106,7 @@ with app.app_context():
         player_obj["plus_minus_1"] = seasons[0]["plusMinus"]
         player_obj["games_played_1"] = seasons[0]["gamesPlayed"]
         player_obj["team_1"] = seasons[0]["teamName"]["default"]
+        player_obj["season_1"] = seasons[0]["season"]
 
         # second season
         player_obj["goals_2"] = seasons[1]["goals"]
@@ -115,8 +116,10 @@ with app.app_context():
         player_obj["plus_minus_2"] = seasons[1]["plusMinus"]
         player_obj["games_played_2"] = seasons[1]["gamesPlayed"]
         player_obj["team_2"] = seasons[1]["teamName"]["default"]
+        player_obj["season_2"] = seasons[1]["season"]
          
         # ppg third season
+        player_obj["season_3"] = seasons[2]["season"]
         player_obj["ppg_3"] = (seasons[2]["points"] / seasons[2]["gamesPlayed"])
         
         return player_obj
@@ -132,9 +135,9 @@ with app.app_context():
 
 
     # once ready take in df
-    def process_data():
+    def process_data(file_name):
 
-        df = pd.read_csv('oilers.csv')
+        df = pd.read_csv(file_name)
         df["points_1"] = (df["goals_1"] + df["assists_1"]) / df["games_played_1"]
         df["points_2"] = (df["goals_2"] + df["assists_2"]) / df["games_played_2"]
         df["goals_1"] = df["goals_1"] / df["games_played_1"]
@@ -149,25 +152,25 @@ with app.app_context():
 
         return df
 
-    # valid_players = get_eligible_players_for_team("EDM", 20222023)
+    valid_players = get_eligible_players_for_team("VAN", 20222023)
 
-    # player_stats = []
-    # for player in valid_players:
-    #     player_stats.append(get_player_stats(player))
+    player_stats = []
+    for player in valid_players:
+        player_stats.append(get_player_stats(player))
 
-    # df = pd.DataFrame(player_stats)
-    # df.to_csv('oilers.csv', index=False)
-    # print(df)
+    df = pd.DataFrame(player_stats)
+    df.to_csv('canucks.csv', index=False)
+    print(df)
 
-    df = process_data()
-    df_final = df[["games_played_1", "games_played_2", "goals_1", "goals_2",
-                   "height", "plus_minus_1", "plus_minus_2", "position", "ppg_3",
-                   "shots_1", "shots_2", "avg_toi_1", "avg_toi_2",
-                   "weight", "points_1", "points_2", "age"]]
+    # df = process_data()
+    # df_final = df[["games_played_1", "games_played_2", "goals_1", "goals_2",
+    #                "height", "plus_minus_1", "plus_minus_2", "position", "ppg_3",
+    #                "shots_1", "shots_2", "avg_toi_1", "avg_toi_2",
+    #                "weight", "points_1", "points_2", "age"]]
     
-    # transform position columns into one-hot encoded features
-    df_final = pd.get_dummies(df_final, columns=["position"])
-    df_final.to_csv('oilers_final.csv', index=False)
+    # # transform position columns into one-hot encoded features
+    # df_final = pd.get_dummies(df_final, columns=["position"])
+    # df_final.to_csv('oilers_final.csv', index=False)
 
     # just start with one team to get a benchmark
     

@@ -32,8 +32,8 @@ x_train = normalize_data(x_train)
 x_test = normalize_data(x_test)
 
 # last season points as benchmark
-print("Mean Squared Error:", mean_squared_error(x_test["points_2"], y_test))
-print("Root Mean Squared Error:", root_mean_squared_error(x_test["points_2"], y_test))
+# print("Mean Squared Error:", mean_squared_error(x_test["points_2"], y_test))
+# print("Root Mean Squared Error:", root_mean_squared_error(x_test["points_2"], y_test))
 
 # train a linear regression model and evaluate on test data
 model = LinearRegression().fit(x_train, y_train)
@@ -48,18 +48,41 @@ ax.set_xlabel('Target Pts/gm', size='x-large')
 ax.set_ylabel('Predicted Pts/gm', size='x-large')
 plt.savefig('plot.png')
 
-df_pred = process_data()
+df_pred = process_data("canucks.csv")
 df_pred_final = df_pred[["name","games_played_1", "games_played_2", "goals_1", "goals_2",
             "height", "plus_minus_1", "plus_minus_2", "position",
             "shots_1", "shots_2", "avg_toi_1", "avg_toi_2",
             "weight", "points_1", "points_2", "age"]]
 
+names = df_pred_final["name"].copy()
+df_pred_final = df_pred_final.drop(columns=["name"])
+
+positions = ["C", "L", "R", "D"]
+df_pred_final["position"] = pd.Categorical(
+    df_pred_final["position"],
+    categories=positions
+)
+
 df_pred_final = pd.get_dummies(df_pred_final, columns=["position"])
+
 df_pred_final = normalize_data(df_pred_final)
 
-predictions = df_pred_final[["name"]]
-predictions["first name"] = predictions["name"].apply(lambda s: s.split(' ')[0])
-predictions["name"] = predictions["name"].apply(lambda s: s.split(' ')[1])
-predictions["ppg"] = model.predict(df_pred_final.drop('name', axis=1))
+df_pred_final = df_pred_final.reindex(
+    columns=x_train.columns,
+    fill_value=0
+)
+
+print(df_pred_final)
+
+pred_ppg = model.predict(df_pred_final)
+
+# --- build output ---
+predictions = pd.DataFrame({
+    "name": names,
+    "ppg": pred_ppg
+})
+
+predictions["first name"] = predictions["name"].str.split().str[0]
+predictions["name"] = predictions["name"].str.split().str[-1]
 
 print(predictions.sort_values(by="ppg"))
