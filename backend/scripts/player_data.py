@@ -4,6 +4,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from flaskr import create_app
 import pandas as pd
 import requests
+import re
 
 app = create_app()
 
@@ -22,34 +23,55 @@ with app.app_context():
 
         df = pd.DataFrame(player_stats)
         print(df)
+    
+    year_list = ['2010-11-10','2011-11-10', '2012-11-10','2013-11-10', '2014-11-10', '2015-11-10', '2016-11-10', '2017-11-10', '2018-11-10', '2019-11-10', '2020-11-10', '2021-11-10', '2022-11-10', '2023-11-10']
+    season_list = ['20102011','20112012', '20122013','20132014', '20142015', '20152016', '20162017', '20172018', '20182019', '20192020', '20202021', '20212022', '20222023','20232024']
 
-    def get_all_teams(date):
-        team_abbrevs = []
-        
-        res = requests.get("https://api-web.nhle.com/v1/standings/{}".format(date))
-        standings = res.json()
+    def get_all_teams():
+        team_abbrevs = []        
+        for year in year_list:
+            res = requests.get("https://api-web.nhle.com/v1/standings/{}".format(year))
+            standings = res.json()
 
-        for team in standings["standings"]:
-            team_abbrevs.append(team["teamAbbrev"]["default"])
+            for team in standings["standings"]:
+                team_abbrevs.append(team["teamAbbrev"]["default"])
 
-        return team_abbrevs
+        team_ids = set(team_abbrevs)
+
+        return team_ids
+
+    all_team_codes = []
+    # all_team_codes = get_all_teams()
 
     # start with players who have 100 games # TODO parse eligible
-    def get_eligible_players_for_team(team, year):
+    def get_eligible_players_for_team():
         players = []
 
-        res = requests.get("https://api-web.nhle.com/v1/roster/{}/{}".format(team, year))
-        team_roster = res.json()
+        for team in all_team_codes:
+            for year in season_list:
 
-        for forward in team_roster["forwards"]:
-            players.append(forward["id"])
+                res = requests.get("https://api-web.nhle.com/v1/roster/{}/{}".format(team, year))
 
-        for defensemen in team_roster["defensemen"]:
-            players.append(defensemen["id"])
+                try:
+                    team_roster = res.json()
 
-        valid_players = filter_players(players)
+                    for forward in team_roster["forwards"]:
+                        players.append(forward["id"])
+
+                    for defensemen in team_roster["defensemen"]:
+                        players.append(defensemen["id"])
+                except:
+                    pass
+
+        # valid_players = filter_players(players)
+
+        player_ids = set(players)
+        print(player_ids)
+        print(len(player_ids))
         
-        return valid_players
+        return player_ids
+    
+    # player_id = get_eligible_players_for_team()
     
     # must have 50 games played in each season from 2021-2023
     def filter_players(players):
@@ -151,16 +173,46 @@ with app.app_context():
         df["age"] = 2024 - df["birth_date"].apply(lambda s: int(s.split("-")[0]))
 
         return df
+    
+    with open("player_ids.txt", "r", encoding="utf-8-sig") as f:
+        content = f.read()
+    ids = re.findall(r"\d+", content)
 
-    valid_players = get_eligible_players_for_team("VAN", 20222023)
+    # temp
+    ids = ['8474157', '8474161', '8474162', '8474163']
+    
+    # get player stats version 2
+    def get_player_stats_v2():
+        player_stats = []
+        for player in ids:
+            res = requests.get("https://api-web.nhle.com/v1/player/{}/landing".format(player))
+            player = res.json()
+            if player["position"] != "G":
+                print(player["lastName"]["default"])
+                # only get non-goalies
+                data = { 
+                    "name" : f"{player["firstName"]["default"]} {player["lastName"]["default"]}",
+                    "country" : player["birthCountry"],
+                    "id" : player["playerId"] ,
+                    "height" : player["heightInInches"],
+                    "weight" : player["weightInPounds"],
+                    "birthdate" : player["birthDate"],
+                    "position" : player["position"],
+                }
+                # get season stats now
 
-    player_stats = []
-    for player in valid_players:
-        player_stats.append(get_player_stats(player))
+    
+    get_player_stats_v2()
 
-    df = pd.DataFrame(player_stats)
-    df.to_csv('canucks.csv', index=False)
-    print(df)
+    # valid_players = get_eligible_players_for_team("VAN", 20222023)
+
+    # player_stats = []
+    # for player in ids:
+    #     player_stats.append(get_player_stats(player))
+
+    # df = pd.DataFrame(player_stats)
+    # df.to_csv('player.csv', index=False)
+    # print(df)
 
     # df = process_data()
     # df_final = df[["games_played_1", "games_played_2", "goals_1", "goals_2",
