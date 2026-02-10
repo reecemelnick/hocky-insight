@@ -4,7 +4,7 @@ from sklearn.metrics import mean_squared_error, root_mean_squared_error
 import pandas as pd
 import matplotlib.pyplot as plt
 from player_data import process_data
-
+import pickle
 
 df = pd.read_csv('player_final.csv')
 
@@ -31,12 +31,13 @@ def normalize_data(data):
 x_train = normalize_data(x_train)
 x_test = normalize_data(x_test)
 
-# last season points as benchmark
-# print("Mean Squared Error:", mean_squared_error(x_test["points_2"], y_test))
-# print("Root Mean Squared Error:", root_mean_squared_error(x_test["points_2"], y_test))
-
 # train a linear regression model and evaluate on test data
 model = LinearRegression().fit(x_train, y_train)
+
+filename = 'linear_model.sav'
+pickle.dump(model, open(filename, 'wb'))
+
+load_model = pickle.load(open(filename, 'rb'))
 
 print('MSE:', mean_squared_error(model.predict(x_test), y_test))
 print('RMSE:', root_mean_squared_error(model.predict(x_test), y_test))
@@ -76,7 +77,6 @@ print(df_pred_final)
 
 pred_ppg = model.predict(df_pred_final)
 
-# --- build output ---
 predictions = pd.DataFrame({
     "name": names,
     "ppg": pred_ppg
