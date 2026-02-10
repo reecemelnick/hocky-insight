@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from player_data import process_data
 
 
-df = pd.read_csv('oilers_final.csv')
+df = pd.read_csv('player_final.csv')
 
 # X is all columns no ppg_3
 X = df.drop(['ppg_3'], axis=1)

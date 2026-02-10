@@ -25,7 +25,7 @@ with app.app_context():
         print(df)
     
     year_list = ['2010-11-10','2011-11-10', '2012-11-10','2013-11-10', '2014-11-10', '2015-11-10', '2016-11-10', '2017-11-10', '2018-11-10', '2019-11-10', '2020-11-10', '2021-11-10', '2022-11-10', '2023-11-10']
-    season_list = ['20102011','20112012', '20122013','20132014', '20142015', '20152016', '20162017', '20172018', '20182019', '20192020', '20202021', '20212022', '20222023','20232024']
+    season_list = ['20102011', '20112012', '20122013', '20132014', '20142015', '20152016', '20162017', '20172018', '20182019', '20192020', '20202021', '20212022', '20222023', "20232024"]
 
     def get_all_teams():
         team_abbrevs = []        
@@ -147,6 +147,8 @@ with app.app_context():
         return player_obj
     
     def format_ice_time(time):
+        if time == '0':
+            return '0'
         time = time.split(":")
         time = float(time[0] + str((int(time[1])/60))[1:])
         time = round(time, 2)
@@ -170,7 +172,7 @@ with app.app_context():
         df["games_played_2"] = df["games_played_2"] / 82
         df["avg_toi_1"] = df["avg_toi_1"].apply(format_ice_time)
         df["avg_toi_2"] = df["avg_toi_2"].apply(format_ice_time)
-        df["age"] = 2024 - df["birth_date"].apply(lambda s: int(s.split("-")[0]))
+        df["age"] = df["season_3"].astype(str).apply(lambda s: int(s[:4])) - df["birth_date"].apply(lambda s: int(s.split("-")[0]))
 
         return df
     
@@ -179,7 +181,7 @@ with app.app_context():
     ids = re.findall(r"\d+", content)
 
     # temp
-    ids = ['8474157', '8474161', '8474162', '8474163']
+    # ids = ['8474157', '8474161', '8474162', '8474163']
     
     # get player stats version 2
     def get_player_stats_v2():
@@ -188,7 +190,7 @@ with app.app_context():
             res = requests.get("https://api-web.nhle.com/v1/player/{}/landing".format(player))
             player = res.json()
             if player["position"] != "G":
-                print(player["lastName"]["default"])
+                # print(player["lastName"]["default"])
                 # only get non-goalies
                 data = { 
                     "name" : f"{player["firstName"]["default"]} {player["lastName"]["default"]}",
@@ -196,37 +198,91 @@ with app.app_context():
                     "id" : player["playerId"] ,
                     "height" : player["heightInInches"],
                     "weight" : player["weightInPounds"],
-                    "birthdate" : player["birthDate"],
+                    "birth_date" : player["birthDate"],
                     "position" : player["position"],
                 }
                 # get season stats now
+                for year_stats in player["seasonTotals"]:
+                    if str(year_stats["season"]) in season_list and year_stats["gameTypeId"] == 2 and year_stats["leagueAbbrev"] == "NHL":
+                        data[str(year_stats["season"])] = {
+                            "goals" : year_stats["goals"],
+                            "assists" : year_stats["assists"],
+                            "shots" : year_stats["shots"],
+                            "avg_toi" : year_stats["avgToi"],
+                            "plus_minus" : year_stats["plusMinus"],
+                            "games_played" : year_stats["gamesPlayed"],
+                            "team" : year_stats["teamName"]["default"],
+                        }
 
+                player_stats.append(data)
+        return player_stats
+
+    player_stats =[]
+    player_stats = get_player_stats_v2()
+    # print(len(player_stats))
+    # print(player_stats)
+
+    reduced_player_stats = []
+
+    # atleast 3 seasons and 100 total games
+    def reduce_player_list():
+        for player in player_stats:
+            games_played = 0
+            seasons = 0
+            for year in season_list:
+                if year in player.keys():
+                    games_played+=player[year]["games_played"]
+                    seasons+=1
+            if seasons >= 3 and games_played > 100:
+                reduced_player_stats.append(player)
+
+
+    reduce_player_list()
+    # print(len(reduced_player_stats))
+
+    def get_year_data(player, year, index):
+        if year in player.keys():
+            return {key+'_'+index:val for key,val in player[year].items()}
+        else:
+            return {
+                "goals_"+index: 0,
+                "assists_"+index: 0,
+                "shots_"+index: 0,
+                "avg_toi_"+index: 0,
+                "plus_minus_"+index: 0,
+                "games_played_"+index: 0,
+            }
     
-    get_player_stats_v2()
+    split_data = []
+    def split_seasons():
+        print("In split")
+        for player in reduced_player_stats:
+            for i in range(12):
+                years = season_list[i:i+3]
+                if years[2] in player.keys():
+                    data = {key:player[key] for key in player.keys() if key not in season_list}
+                    data = {**data, **get_year_data(player, years[0], "1"), **get_year_data(player, years[1], "2")}
+                    data["season_1"] = str(years[0])
+                    data["season_2"] = str(years[1])
+                    data["season_3"] = str(years[2])
+                    data["ppg_3"] = (player[years[2]]["goals"] + player[years[2]]["assists"]) / player[years[2]]["games_played"]
+                    split_data.append(data)
 
-    # valid_players = get_eligible_players_for_team("VAN", 20222023)
-
-    # player_stats = []
-    # for player in ids:
-    #     player_stats.append(get_player_stats(player))
-
-    # df = pd.DataFrame(player_stats)
-    # df.to_csv('player.csv', index=False)
+    split_seasons()
+    df = pd.DataFrame(split_data)
     # print(df)
+    df.to_csv('player.csv', index=False)
 
-    # df = process_data()
-    # df_final = df[["games_played_1", "games_played_2", "goals_1", "goals_2",
-    #                "height", "plus_minus_1", "plus_minus_2", "position", "ppg_3",
-    #                "shots_1", "shots_2", "avg_toi_1", "avg_toi_2",
-    #                "weight", "points_1", "points_2", "age"]]
+    df = process_data("player.csv")
+
+    df_final = df[["games_played_1", "games_played_2", "goals_1", "goals_2",
+                   "height", "plus_minus_1", "plus_minus_2", "position", "ppg_3",
+                   "shots_1", "shots_2", "avg_toi_1", "avg_toi_2",
+                   "weight", "points_1", "points_2", "age"]]
     
-    # # transform position columns into one-hot encoded features
-    # df_final = pd.get_dummies(df_final, columns=["position"])
-    # df_final.to_csv('oilers_final.csv', index=False)
+    df_final = pd.get_dummies(df_final, columns=['position'])
+    df_final = df_final[(df_final['games_played_1']!=0)|(df_final['games_played_2']!=0)]
+    df_final = df_final.fillna(0)
 
-    # just start with one team to get a benchmark
-    
-
-    
-
- 
+    print(df_final)
+    df_final.to_csv('player_final.csv', index=False)
