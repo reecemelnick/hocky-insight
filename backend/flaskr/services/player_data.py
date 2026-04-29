@@ -121,9 +121,11 @@ def fill_dataframe():
     df = pd.DataFrame(player_stats)
     print(df)
 
-year_list = ['2010-11-10','2011-11-10', '2012-11-10','2013-11-10', '2014-11-10', '2015-11-10', '2016-11-10', '2017-11-10', '2018-11-10', '2019-11-10', '2020-11-10', '2021-11-10', '2022-11-10', '2023-11-10']
-season_list = ['20102011', '20112012', '20122013', '20132014', '20142015', '20152016', '20162017', '20172018', '20182019', '20192020', '20202021', '20212022', '20222023', "20232024"]
+# year_list = ['2010-11-10','2011-11-10', '2012-11-10','2013-11-10', '2014-11-10', '2015-11-10', '2016-11-10', '2017-11-10', '2018-11-10', '2019-11-10', '2020-11-10', '2021-11-10', '2022-11-10', '2023-11-10']
+# season_list = ['20102011', '20112012', '20122013', '20132014', '20142015', '20152016', '20162017', '20172018', '20182019', '20192020', '20202021', '20212022', '20222023', "20232024"]
 
+year_list = ['2023-11-10']
+season_list = ["20232024"]
 def get_all_teams():
     team_abbrevs = []        
     for year in year_list:
@@ -160,40 +162,7 @@ def get_eligible_players_for_all_teams(all_team_codes):
     return player_ids # save in database
 
 def get_sqlite_conn():
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    db_path = os.path.join(BASE_DIR, "instance", "flaskr.sqlite")
-
-    print("DB PATH:", db_path)  # debug
-
-    return sqlite3.connect(db_path)
-
-def save_player_ids(player_ids):
-    conn = get_sqlite_conn()
-    cur = conn.cursor()
-
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS player_ids (
-            player_id TEXT PRIMARY KEY
-        )
-    """)
-
-    for pid in player_ids:
-        cur.execute("""
-            INSERT OR IGNORE INTO player_ids (player_id)
-            VALUES (?)
-        """, (pid,))
-
-    conn.commit()
-    conn.close()
-
-def clear_players_table():
-    conn = get_sqlite_conn()
-    cur = conn.cursor()
-
-    cur.execute("DELETE FROM players")
-
-    conn.commit()
-    conn.close()
+    return sqlite3.connect("flaskr/instance/flaskr.sqlite")
 
 def save_player(conn, data):
     cur = conn.cursor()
@@ -234,13 +203,6 @@ def save_player_season(conn, player_id, season, stats):
         stats["avg_toi"],
         stats["team"]
     ))
-
-def get_player_ids():
-    conn = get_sqlite_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT player_id FROM player_ids")
-    rows = cur.fetchall()
-    return [row[0] for row in rows]
 
 def fetch_and_store_players(ids):
     conn = get_sqlite_conn()
@@ -290,82 +252,27 @@ def fetch_and_store_players(ids):
     conn.commit()
     conn.close()
 
-def get_eligible_players():
+def save_player_ids(player_ids):
     conn = get_sqlite_conn()
     cur = conn.cursor()
 
     cur.execute("""
-        SELECT player_id
-        FROM player_seasons
-        GROUP BY player_id
-        HAVING COUNT(*) >= 3
-           AND SUM(games_played) > 100
+        CREATE TABLE IF NOT EXISTS players (
+            player_id TEXT PRIMARY KEY
+        )
     """)
 
-    return [row[0] for row in cur.fetchall()]
+    for pid in player_ids:
+        cur.execute("""
+            INSERT OR IGNORE INTO players (player_id)
+            VALUES (?)
+        """, (pid,))
 
-def get_prediction_dataframe(conn, player_ids):
-    rows = []
+    conn.commit()
+    conn.close()
 
-    for player_id in player_ids:
 
-        query = """
-        SELECT
-            p.player_id,
-            p.name,
-            p.height,
-            p.weight,
-            p.birth_date,
-            p.position,
-
-            s.season,
-            s.goals,
-            s.assists,
-            s.shots,
-            s.avg_toi,
-            s.plus_minus,
-            s.games_played
-
-        FROM players p
-        JOIN player_seasons s ON p.player_id = s.player_id
-        WHERE p.player_id = ?
-        ORDER BY s.season DESC
-        """
-
-        df = pd.read_sql_query(query, conn, params=[player_id])
-
-        # must have at least 3 seasons
-        if len(df) < 3:
-            continue
-
-        s1, s2, s3 = df.iloc[0], df.iloc[1], df.iloc[2]
-
-        rows.append({
-            "player_id": player_id,
-            "name": s1["name"],
-            "height": s1["height"],
-            "weight": s1["weight"],
-            "birth_date": s1["birth_date"],
-            "position": s1["position"],
-
-            "goals_1": s1["goals"],
-            "assists_1": s1["assists"],
-            "shots_1": s1["shots"],
-            "avg_toi_1": s1["avg_toi"],
-            "plus_minus_1": s1["plus_minus"],
-            "games_played_1": s1["games_played"],
-
-            "goals_2": s2["goals"],
-            "assists_2": s2["assists"],
-            "shots_2": s2["shots"],
-            "avg_toi_2": s2["avg_toi"],
-            "plus_minus_2": s2["plus_minus"],
-            "games_played_2": s2["games_played"],
-
-            "season_3": s3["season"]
-        })
-
-    return pd.DataFrame(rows)
+# save_player_ids(get_eligible_players_for_all_teams(get_all_teams()))
 
 # must have 50 games played in each season from 2021-2023
 def filter_players(players):
@@ -452,7 +359,9 @@ def get_age_from_date():
     date = "1986-12-29"
 
 # once ready take in df
-def process_data(df):
+def process_data(file_name):
+
+    df = pd.read_csv(file_name)
     df["points_1"] = (df["goals_1"] + df["assists_1"]) / df["games_played_1"]
     df["points_2"] = (df["goals_2"] + df["assists_2"]) / df["games_played_2"]
     df["goals_1"] = df["goals_1"] / df["games_played_1"]
