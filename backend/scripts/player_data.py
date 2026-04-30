@@ -12,100 +12,11 @@ def get_prediction_data(player_stats):
     pred_data = []
     for player in player_stats:
         data = {key:player[key] for key in player.keys() if key not in year_list}
-        data = {**data, **get_year_data(player, '20182019', '1'), **get_year_data(player, '20192020', '2')}
-        data['season_1'] = '20182019'
-        data['season_2'] = '20192020'
-        data['season_3'] = '20202021'
+        data = {**data, **get_year_data(player, '20222023', '1'), **get_year_data(player, '20232024', '2')}
+        data['season_1'] = '20222023'
+        data['season_2'] = '20232024'
+        data['season_3'] = '20242025'
         pred_data.append(data)
-
-def generate_team_csv(team_code, output_file="canucks.csv"):
-    print(f"Generating data for team: {team_code} (2022-2023 roster)")
-
-    player_ids = []
-
-    season = "20222023"
-
-    try:
-        res = requests.get(f"https://api-web.nhle.com/v1/roster/{team_code}/{season}")
-        roster = res.json()
-
-        for p in roster.get("forwards", []):
-            player_ids.append(p["id"])
-        for p in roster.get("defensemen", []):
-            player_ids.append(p["id"])
-
-    except Exception as e:
-        print("Error fetching roster:", e)
-        return
-
-    player_ids = list(set(player_ids))
-    print(f"Found {len(player_ids)} players")
-
-    player_ids = filter_players(player_ids)
-
-    rows = []
-
-    for pid in player_ids:
-        try:
-            res = requests.get(f"https://api-web.nhle.com/v1/player/{pid}/landing")
-            player = res.json()
-
-            if player["position"] == "G":
-                continue
-
-            # ✅ only NHL regular season stats
-            seasons = [
-                s for s in player["seasonTotals"]
-                if s["gameTypeId"] == 2 and s["leagueAbbrev"] == "NHL"
-            ]
-
-            # need at least 2 seasons
-            if len(seasons) < 2:
-                continue
-
-            # take last 2 seasons
-            s1 = seasons[-2]
-            s2 = seasons[-1]
-
-            row = {
-                "name": f"{player['firstName']['default']} {player['lastName']['default']}",
-                "height": player["heightInInches"],
-                "weight": player["weightInPounds"],
-                "birth_date": player["birthDate"],
-                "position": player["position"],
-
-                # season 1
-                "goals_1": s1["goals"],
-                "assists_1": s1["assists"],
-                "shots_1": s1["shots"],
-                "avg_toi_1": s1["avgToi"],
-                "plus_minus_1": s1["plusMinus"],
-                "games_played_1": s1["gamesPlayed"],
-
-                # season 2
-                "goals_2": s2["goals"],
-                "assists_2": s2["assists"],
-                "shots_2": s2["shots"],
-                "avg_toi_2": s2["avgToi"],
-                "plus_minus_2": s2["plusMinus"],
-                "games_played_2": s2["gamesPlayed"],
-
-                "season_3": s2["season"]  # needed for age calc
-            }
-
-            rows.append(row)
-
-        except Exception as e:
-            print(f"Error with player {pid}: {e}")
-            continue
-
-    df = pd.DataFrame(rows)
-
-    print("Raw team data:")
-    print(df.head())
-
-    df.to_csv(output_file, index=False)
-    print(f"Saved to {output_file}")
 
 def fill_dataframe():
     teams = get_all_teams("2023-11-10") # just use current-ish date to get team codes
@@ -122,7 +33,7 @@ def fill_dataframe():
     print(df)
 
 year_list = ['2010-11-10','2011-11-10', '2012-11-10','2013-11-10', '2014-11-10', '2015-11-10', '2016-11-10', '2017-11-10', '2018-11-10', '2019-11-10', '2020-11-10', '2021-11-10', '2022-11-10', '2023-11-10']
-season_list = ['20102011', '20112012', '20122013', '20132014', '20142015', '20152016', '20162017', '20172018', '20182019', '20192020', '20202021', '20212022', '20222023', "20232024"]
+season_list = ['20102011', '20112012', '20122013', '20132014', '20142015', '20152016', '20162017', '20172018', '20182019', '20192020', '20202021', '20212022', '20222023', '20232024', '20242025']
 
 def get_all_teams():
     team_abbrevs = []        
@@ -379,7 +290,7 @@ def filter_players(players):
         valid_seasons = []
         valid = True
         for season in player_data["seasonTotals"]:
-            if season["leagueAbbrev"] == "NHL" and season["gameTypeId"] == 2 and (season["season"] == 20212022 or season["season"] == 20222023 or season["season"] == 20232024): 
+            if season["leagueAbbrev"] == "NHL" and season["gameTypeId"] == 2 and (season["season"] == 20212022 or season["season"] == 20222023 or season["season"] == 20232024 or season["season"] == 20242025): 
                 valid_seasons.append(season)
 
         if len(valid_seasons) < 3:
@@ -403,7 +314,7 @@ def get_player_stats(id):
     player = res.json()
 
     for season_stats in player["seasonTotals"]:
-        if (season_stats["season"] == 20212022 or season_stats["season"] == 20222023 or season_stats["season"] == 20232024) and season_stats["gameTypeId"] == 2 and season_stats["leagueAbbrev"] == "NHL":
+        if (season_stats["season"] == 20212022 or season_stats["season"] == 20222023 or season_stats["season"] == 20232024 or season_stats["season"] == 20242025) and season_stats["gameTypeId"] == 2 and season_stats["leagueAbbrev"] == "NHL":
             seasons.append(season_stats)
     
     player_obj["name"] = f"{player["firstName"]["default"]} {player["lastName"]["default"]}"
@@ -561,3 +472,4 @@ def make_player_stats_final():
 
     print(df_final)
     df_final.to_csv('player_final.csv', index=False)
+

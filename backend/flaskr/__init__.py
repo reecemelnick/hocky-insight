@@ -5,7 +5,7 @@ from .routes.scores import bp as scores_bp
 from .routes.rankings import bp as rankings_bp
 from .routes.nhlStandings import bp as standings_bp
 from .routes.predict import bp as predict_bp
-from .db import init_db_command, reset_elo_command, insert_elo_command, clear_last_date_command, close_db
+from .db import init_db_command, reset_elo_command, insert_elo_command, clear_last_date_command, backfill_20242025_seasons_command, close_db
 from .services.updateManager import UpdateManager
 
 # flask --app flaskr run --debug --port 8000
@@ -57,5 +57,6 @@ def add_commands(app):
     app.cli.add_command(reset_elo_command)
     app.cli.add_command(insert_elo_command)
     app.cli.add_command(clear_last_date_command)
+    app.cli.add_command(backfill_20242025_seasons_command)
 
     return

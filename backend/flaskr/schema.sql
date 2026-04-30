@@ -1,6 +1,6 @@
-DROP TABLE IF EXISTS scores;
 
-CREATE TABLE scores (
+
+CREATE TABLE IF NOT EXISTS scores (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     home_team TEXT NOT NULL,
     away_team TEXT NOT NULL,
@@ -8,17 +8,13 @@ CREATE TABLE scores (
     away_score INTEGER
 );
 
-DROP TABLE IF EXISTS elo;
-
-CREATE TABLE elo (
+CREATE TABLE IF NOT EXISTS elo (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     team_name TEXT UNIQUE NOT NULL,
     elo INTEGER
 );
 
-DROP TABLE IF EXISTS updates;
-
-CREATE TABLE updates (
+CREATE TABLE IF NOT EXISTS updates (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     last_update TEXT
 );
@@ -53,6 +49,7 @@ CREATE TABLE IF NOT EXISTS player_ids (
     player_id INTEGER PRIMARY KEY
 );
 
+DROP TABLE IF EXISTS player_predictions;
 CREATE TABLE IF NOT EXISTS player_predictions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     player_id INTEGER,

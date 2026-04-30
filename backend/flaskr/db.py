@@ -1,5 +1,6 @@
 import sqlite3
 import click
+import requests
 from flask import current_app, g
 from flask.cli import with_appcontext
 
@@ -75,6 +76,94 @@ def clear_last_date_command():
     db.execute("DELETE FROM updates")
     db.commit()
     click.echo("Cleard last date")    
+
+@click.command("backfill-20242025-seasons")
+@with_appcontext
+def backfill_20242025_seasons_command():
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute("SELECT player_id FROM player_predictions")
+    player_ids = [row[0] for row in cursor.fetchall()]
+
+    inserted = 0
+
+    for player_id in player_ids:
+        response = requests.get(f"https://api-web.nhle.com/v1/player/{player_id}/landing", timeout=10)
+        response.raise_for_status()
+        payload = response.json()
+
+        player_info = {
+            "name": f"{payload['firstName']['default']} {payload['lastName']['default']}",
+            "country": payload.get("birthCountry"),
+            "id": payload["playerId"],
+            "height": payload.get("heightInInches"),
+            "weight": payload.get("weightInPounds"),
+            "birth_date": payload.get("birthDate"),
+            "position": payload.get("position"),
+        }
+
+        db.execute(
+            """
+            INSERT OR REPLACE INTO players (
+                player_id, name, country, height, weight, birth_date, position
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                player_info["id"],
+                player_info["name"],
+                player_info["country"],
+                player_info["height"],
+                player_info["weight"],
+                player_info["birth_date"],
+                player_info["position"],
+            ),
+        )
+
+        season_stats = next(
+            (
+                season
+                for season in payload.get("seasonTotals", [])
+                if season.get("season") == 20242025
+                and season.get("gameTypeId") == 2
+                and season.get("leagueAbbrev") == "NHL"
+            ),
+            None,
+        )
+
+        if not season_stats:
+            continue
+
+        db.execute(
+            "DELETE FROM player_seasons WHERE player_id = ? AND season = ?",
+            (player_id, "20242025"),
+        )
+        db.execute(
+            """
+            INSERT INTO player_seasons (
+                player_id, season,
+                goals, assists, shots,
+                plus_minus, games_played, avg_toi, team
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                player_id,
+                "20242025",
+                season_stats.get("goals"),
+                season_stats.get("assists"),
+                season_stats.get("shots"),
+                season_stats.get("plusMinus"),
+                season_stats.get("gamesPlayed"),
+                season_stats.get("avgToi"),
+                season_stats.get("teamName", {}).get("default"),
+            ),
+        )
+        inserted += 1
+
+    db.commit()
+    click.echo(f"Backfilled 20242025 season stats for {inserted} players")
 
 @click.command("init-db")
 @with_appcontext

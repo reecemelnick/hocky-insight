@@ -1,46 +1,38 @@
 from flask import jsonify, Blueprint, request
-import os
-import joblib
-import pandas as pd
-from ..services.player_data import process_data, generate_team_csv
+from ..db import get_db
 
 bp = Blueprint("predict", __name__)
-
-BASE_DIR = os.path.dirname(__file__)
-model_path = os.path.join(BASE_DIR, "..", "data", "nhl_ppg_model.pkl")
-model = joblib.load(model_path)
-scaler_path = os.path.join(BASE_DIR, "..", "data", "scaler_params.pkl")
-scaler = joblib.load(scaler_path)
-
-# passed in example
-team_code = "VAN"
-
-# def make_team_csv(team_code):
-#         print(team_code)
-
-
 @bp.route("/predict", methods=["GET"])
 def predict():
+    conn = get_db()
+    cursor = conn.cursor()
 
-    # generate_team_csv("VAN")
-    # csv_path = os.path.join(BASE_DIR, "..", "data", "canucks.csv")
-    # df = process_data(csv_path)
+    cursor.execute("""
+        SELECT
+            pp.player_id,
+            pp.name,
+            pp.predicted_ppg,
+            ps.goals,
+            ps.assists,
+            ps.games_played
+        FROM player_predictions pp
+        LEFT JOIN player_seasons ps
+            ON pp.player_id = ps.player_id
+            AND ps.season = '20242025'
+        ORDER BY pp.predicted_ppg DESC
+    """)
 
-    # names = df["name"]
-    # X = df.drop(columns=["name"])
+    rows = cursor.fetchall()
 
-    # X = pd.get_dummies(X, columns=["position"])
-    # X = X.reindex(columns=model.feature_names_in_, fill_value=0)
+    result = [
+        {
+            "player_id": r[0],
+            "name": r[1],
+            "ppg": ((r[3] + r[4]) / r[5]) if r[5] else None,
+            "predicted_ppg": r[2]
+        }
+        for r in rows
+    ]
 
-    # for col in scaler:
-    #     if col in X:
-    #         X[col] = (X[col] - scaler[col]["mu"]) / scaler[col]["sig"]
-
-    # preds = model.predict(X)
-
-    # result = [
-    #     {"name": n, "ppg": float(p)}
-    #     for n, p in zip(names, preds)
-    # ]
-    result = "success"
     return jsonify(result)
+    

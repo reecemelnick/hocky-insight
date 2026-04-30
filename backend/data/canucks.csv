@@ -1,8 +1,0 @@
-name,country,id,height,weight,birth_date,position,goals_1,assists_1,shots_1,avg_toi_1,plus_minus_1,games_played_1,team_1,season_1,goals_2,assists_2,shots_2,avg_toi_2,plus_minus_2,games_played_2,team_2,season_2,season_3,ppg_3
-Brock Boeser,USA,8478444,73,208,1997-02-25,R,23,23,195,18:36,-5,71,Vancouver Canucks,20212022,18,37,178,17:14,-20,74,Vancouver Canucks,20222023,20232024,0.9012345679012346
-Conor Garland,USA,8478856,70,165,1996-03-11,R,19,33,203,16:24,18,77,Vancouver Canucks,20212022,17,29,167,15:07,-5,81,Vancouver Canucks,20222023,20232024,0.573170731707317
-J.T. Miller,USA,8476468,72,211,1993-03-14,C,32,67,206,21:05,15,80,Vancouver Canucks,20212022,32,50,223,20:41,-7,81,Vancouver Canucks,20222023,20232024,1.271604938271605
-Elias Pettersson,SWE,8480012,74,176,1998-11-12,C,32,36,192,18:36,1,80,Vancouver Canucks,20212022,39,63,257,20:33,16,80,Vancouver Canucks,20222023,20232024,1.0853658536585367
-Oliver Ekman-Larsson,SWE,8475171,74,190,1991-07-17,D,5,24,168,22:19,5,79,Vancouver Canucks,20212022,2,20,90,20:11,-24,54,Vancouver Canucks,20222023,20232024,0.4
-Quinn Hughes,USA,8480800,70,180,1999-10-14,D,8,60,150,25:15,10,76,Vancouver Canucks,20212022,7,69,154,25:40,15,78,Vancouver Canucks,20222023,20232024,1.1219512195121952
-Tyler Myers,USA,8474574,80,229,1990-02-01,D,1,17,128,21:59,15,82,Vancouver Canucks,20212022,1,16,100,20:54,-16,78,Vancouver Canucks,20222023,20232024,0.37662337662337664
