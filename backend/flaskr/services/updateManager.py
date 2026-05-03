@@ -5,29 +5,33 @@ from .eloManager import EloManager
 class UpdateManager():
     
     def run_daily_tasks_if_needed(self):
-
-        last_row = self.get_last_date()
-        last_run = last_row["last_update"] if last_row else None
+        
+        # get last time update was run and compare to todays date
+        last_data_updated = self.get_last_date()
         todays_date_string = date.today().isoformat()
 
-        if last_run is None or todays_date_string > last_run:
+        # if update needed
+        if last_data_updated is None or todays_date_string > last_data_updated:
             
-            # basically run proccess_day on yesterday
-            elo = EloManager()
-            yesterday = date.today() - timedelta(days=1)
-            elo.run_though_day(yesterday)
+            self.update_elo() # update elo for all games from yesterday
 
-            print("Updating last date")
-            self.save_last_update_date(todays_date_string)
+            self.save_last_update_date(todays_date_string) # save last update date as today
+    
+    def update_elo(self):
+        elo = EloManager()
+        yesterday = date.today() - timedelta(days=1)
+        elo.run_though_day(yesterday)
 
-    # get last time elo was updated
+    # get last time update was run
     def get_last_date(self):
         db = get_db()
-        date = db.execute(
+        date_row = db.execute(
             "SELECT * FROM updates ORDER BY id DESC LIMIT 1"
         ).fetchone()
+        
+        last_run = date_row["last_update"] if date_row else None # ISO format
 
-        return date
+        return last_run # last date update was run. None if first time running
 
     # save last date updated 
     def save_last_update_date(self, date):

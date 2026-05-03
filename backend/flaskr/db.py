@@ -89,7 +89,7 @@ def backfill_20242025_seasons_command():
     inserted = 0
 
     for player_id in player_ids:
-        response = requests.get(f"https://api-web.nhle.com/v1/player/{player_id}/landing", timeout=10)
+        response = requests.get(f"https://api-web.nhle.com/v1/player/{player_id}/landing")
         response.raise_for_status()
         payload = response.json()
 

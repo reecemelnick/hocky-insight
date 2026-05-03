@@ -1,4 +1,5 @@
 from flaskr.db import get_db
+
 class EloRetriever:
 
     def get_elo_for_team(self, name):

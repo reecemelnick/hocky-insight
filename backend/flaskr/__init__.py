@@ -19,9 +19,6 @@ def create_app(test_config=None):
         DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
     )
 
-    # update manager used to check for new day - if new day, process the events
-    updateManager = UpdateManager()
-
     # implemnt when test are added
     if test_config is None:
         # load the instance config, if it exists, when not testing
@@ -36,6 +33,9 @@ def create_app(test_config=None):
     except OSError:
         pass
     
+    # update manager used to check for new day - if new day, process the events
+    updateManager = UpdateManager()
+
     # check for new day # could move to cron job or background worker
     @app.before_request
     def daily_check():
