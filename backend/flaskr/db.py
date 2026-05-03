@@ -48,34 +48,13 @@ def insert_elo_command():
     db.commit()
     click.echo("Team elo reset")     
 
-@click.command("reset-elo")
-@with_appcontext
-def reset_elo_command():
-    db = get_db()
-    db.execute(
-        "UPDATE elo SET elo = ?",
-        (1500,)
-    )
-    
-    db.commit()
-    click.echo("Team elo reset")   
-
-def reset_elo_helper():
-    db = get_db()
-    db.execute(
-        "UPDATE elo SET elo = ?",
-        (1500,)
-    )
-    
-    db.commit()
-
 @click.command("clear-last-date")
 @with_appcontext
 def clear_last_date_command():
     db = get_db()
     db.execute("DELETE FROM updates")
     db.commit()
-    click.echo("Cleard last date")    
+    click.echo("Cleared last date")    
 
 @click.command("backfill-20242025-seasons")
 @with_appcontext

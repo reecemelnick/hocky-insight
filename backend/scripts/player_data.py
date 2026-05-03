@@ -76,7 +76,9 @@ def get_sqlite_conn():
 
     print("DB PATH:", db_path)  # debug
 
-    return sqlite3.connect(db_path)
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    return conn
 
 def save_player_ids(player_ids):
     conn = get_sqlite_conn()
@@ -452,6 +454,7 @@ def split_seasons(reduced_player_stats):
                 data["season_3"] = str(years[2])
                 data["ppg_3"] = (player[years[2]]["goals"] + player[years[2]]["assists"]) / player[years[2]]["games_played"]
                 split_data.append(data)
+    
 
 def make_player_stats_final():
     split_seasons()

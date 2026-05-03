@@ -1,98 +1,80 @@
+
+
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, root_mean_squared_error
 import pandas as pd
 import matplotlib.pyplot as plt
 import joblib
+import os
+import re
 from player_data import process_data, get_sqlite_conn, get_eligible_players, get_prediction_dataframe
 from collections import defaultdict
 
-df = pd.read_csv('player_final.csv')
-
-# X is all columns no ppg_3
-X = df.drop(['ppg_3'], axis=1)
-Y = df['ppg_3']
-
-x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.15)
-
-print('Number of training data:', len(x_train))
-print('Number of testing data:', len(x_test))
-
-standardization = {}
-for col in ["height", "plus_minus_1", "plus_minus_2", "avg_toi_1", "avg_toi_2", "weight", "age"]:
-    mu = x_train[col].mean()
-    sig = x_train[col].std()
-    standardization[col] = {"mu": mu, "sig": sig}
 
 def normalize_data(data):
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    scaler_path = os.path.join(BASE_DIR, "scaler_params.pkl")
+    standardization = joblib.load(scaler_path)
     for col in ["height", "plus_minus_1", "plus_minus_2", "avg_toi_1", "avg_toi_2", "weight", "age"]:
         data[col] = (data[col] - standardization[col]["mu"]) / standardization[col]["sig"]
-    return data 
+    return data
 
-x_train = normalize_data(x_train)
-x_test = normalize_data(x_test)
+def train_model():
 
-model = LinearRegression().fit(x_train, y_train)
-joblib.dump(model, 'nhl_ppg_model.pkl')
-joblib.dump(standardization, 'scaler_params.pkl')
+    df = pd.read_csv('player_final.csv')
 
-def predict_all_players():
-    conn = get_sqlite_conn()
+    X = df.drop(['ppg_3'], axis=1)
+    Y = df['ppg_3']
 
-    ids = get_eligible_players()
+    x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.15)
 
-    df = get_prediction_dataframe(conn, ids)
-    print(df)
-    df = process_data(df)
-    print("after process")
+    print('Number of training data:', len(x_train))
+    print('Number of testing data:', len(x_test))
 
-    df_pred_final = df[["player_id", "name","games_played_1", "games_played_2", "goals_1", "goals_2",
-                "height", "plus_minus_1", "plus_minus_2", "position",
-                "shots_1", "shots_2", "avg_toi_1", "avg_toi_2",
-                "weight", "points_1", "points_2", "age"]]
+    standardization = {}
+    for col in ["height", "plus_minus_1", "plus_minus_2", "avg_toi_1", "avg_toi_2", "weight", "age"]:
+        mu = x_train[col].mean()
+        sig = x_train[col].std()
+        standardization[col] = {"mu": mu, "sig": sig} 
 
-    meta = df_pred_final[["player_id", "name"]].copy()
-    X = df_pred_final.drop(columns=["player_id", "name"])
+    x_train = normalize_data(x_train)
+    x_test = normalize_data(x_test)
 
-    positions = ["C", "L", "R", "D"]
-    df_pred_final["position"] = pd.Categorical(
-        df_pred_final["position"],
-        categories=positions
-    )
+    model = LinearRegression().fit(x_train, y_train)
+    joblib.dump(model, 'nhl_ppg_model.pkl')
+    joblib.dump(standardization, 'scaler_params.pkl')
 
-    df_pred_final = pd.get_dummies(df_pred_final, columns=["position"])
+def get_prediction_table_name(prediction_season):
+    season = str(prediction_season)
+    if not re.fullmatch(r"\d{8}", season):
+        raise ValueError(f"Invalid season format: {prediction_season}. Expected YYYYYYYY.")
+    return f"player_predictions_{season}"
 
-    df_pred_final = normalize_data(df_pred_final)
-
-    df_pred_final = df_pred_final.reindex(
-        columns=x_train.columns,
-        fill_value=0
-    )
-
-    print(df_pred_final)
-
-    pred_ppg = model.predict(df_pred_final)
-
-    predictions = pd.DataFrame({
-        "player_id": meta["player_id"].values,
-        "name": meta["name"].values,
-        "ppg": pred_ppg
-    })
-
-    predictions[["first_name", "last_name"]] = predictions["name"].str.split(" ", n=1, expand=True)
-
-    save_predictions(conn, predictions)
-
-    print(predictions.sort_values(by="ppg"))
-
-def save_predictions(conn, predictions):
+def ensure_prediction_table(conn, table_name):
     cursor = conn.cursor()
+    cursor.execute(f"""
+        CREATE TABLE IF NOT EXISTS {table_name} (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            player_id INTEGER,
+            name TEXT,
+            predicted_ppg REAL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    conn.commit()
 
-    cursor.execute("DELETE FROM player_predictions")
+def save_predictions(conn, predictions, prediction_season):
+    cursor = conn.cursor()
+    table_name = get_prediction_table_name(prediction_season)
+
+    ensure_prediction_table(conn, table_name)
+
+    cursor.execute(f"DELETE FROM {table_name}")
 
     for _, row in predictions.iterrows():
-        cursor.execute("""
-            INSERT INTO player_predictions (player_id, name, predicted_ppg)
+        cursor.execute(f"""
+            INSERT INTO {table_name} (player_id, name, predicted_ppg)
             VALUES (?, ?, ?)
         """, (
             int(row["player_id"]),
@@ -102,12 +84,15 @@ def save_predictions(conn, predictions):
 
     conn.commit()
 
-def get_all_predictions(conn):
+def get_all_predictions(conn, prediction_season=None):
     cursor = conn.cursor()
+    table_name = "player_predictions"
+    if prediction_season is not None:
+        table_name = get_prediction_table_name(prediction_season)
 
-    cursor.execute("""
+    cursor.execute(f"""
         SELECT player_id, name, predicted_ppg
-        FROM player_predictions
+        FROM {table_name}
         ORDER BY predicted_ppg DESC
     """)
 
@@ -122,9 +107,17 @@ def get_all_predictions(conn):
         for row in rows
     ]
 
+# format previous season: eg 20232024 -> 20222023 when passed in 1 as arg 2
+def get_prev_season(season, years_ago):
+    year1 = int(season[:4]) - years_ago
+    year2 = int(season[4:]) - years_ago
+    return f"{year1}{year2}"
 
-def load_prediction_players(conn):
+def load_prediction_players(conn, prediction_season):
     cur = conn.cursor()
+    
+    prev_season1 = get_prev_season(prediction_season, 1)
+    prev_season2 = get_prev_season(prediction_season, 2)
 
     cur.execute("""
         SELECT 
@@ -143,9 +136,9 @@ def load_prediction_players(conn):
             s.games_played
         FROM players p
         JOIN player_seasons s ON p.player_id = s.player_id
-        WHERE s.season IN ('20222023', '20232024')
+        WHERE s.season IN (?, ?)
         ORDER BY p.player_id, s.season
-    """)
+    """, (prev_season1, prev_season2))
 
     rows = cur.fetchall()
 
@@ -155,34 +148,37 @@ def build_player_dict(rows):
     players = defaultdict(dict)
 
     for r in rows:
-        pid = r[0]
-        season = r[6]
+        pid = r["player_id"]
+        season = r["season"]
 
         players[pid]["player_id"] = pid
-        players[pid]["name"] = r[1]
-        players[pid]["height"] = r[2]
-        players[pid]["weight"] = r[3]
-        players[pid]["birth_date"] = r[4]
-        players[pid]["position"] = r[5]
+        players[pid]["name"] = r["name"]
+        players[pid]["height"] = r["height"]
+        players[pid]["weight"] = r["weight"]
+        players[pid]["birth_date"] = r["birth_date"]
+        players[pid]["position"] = r["position"]
 
         players[pid][season] = {
-            "goals": r[7],
-            "assists": r[8],
-            "shots": r[9],
-            "avg_toi": r[10],
-            "plus_minus": r[11],
-            "games_played": r[12],
+            "goals": r["goals"],
+            "assists": r["assists"],
+            "shots": r["shots"],
+            "avg_toi": r["avg_toi"],
+            "plus_minus": r["plus_minus"],
+            "games_played": r["games_played"],
         }
 
     return list(players.values())
 
-def get_prediction_data(players):
+def get_prediction_data(players, prediction_season):
     pred_data = []
+
+    prev_season1 = get_prev_season(prediction_season, 1)
+    prev_season2 = get_prev_season(prediction_season, 2)
 
     for p in players:
 
         # must have BOTH seasons
-        if "20222023" not in p or "20232024" not in p:
+        if prev_season1 not in p or prev_season2 not in p:
             continue
 
         data = {
@@ -195,37 +191,36 @@ def get_prediction_data(players):
         }
 
         data.update({
-            "goals_1": p["20222023"]["goals"],
-            "assists_1": p["20222023"]["assists"],
-            "shots_1": p["20222023"]["shots"],
-            "avg_toi_1": p["20222023"]["avg_toi"],
-            "plus_minus_1": p["20222023"]["plus_minus"],
-            "games_played_1": p["20222023"]["games_played"],
+            "goals_1": p[prev_season1]["goals"],
+            "assists_1": p[prev_season1]["assists"],
+            "shots_1": p[prev_season1]["shots"],
+            "avg_toi_1": p[prev_season1]["avg_toi"],
+            "plus_minus_1": p[prev_season1]["plus_minus"],
+            "games_played_1": p[prev_season1]["games_played"],
 
-            "goals_2": p["20232024"]["goals"],
-            "assists_2": p["20232024"]["assists"],
-            "shots_2": p["20232024"]["shots"],
-            "avg_toi_2": p["20232024"]["avg_toi"],
-            "plus_minus_2": p["20232024"]["plus_minus"],
-            "games_played_2": p["20232024"]["games_played"],
+            "goals_2": p[prev_season2]["goals"],
+            "assists_2": p[prev_season2]["assists"],
+            "shots_2": p[prev_season2]["shots"],
+            "avg_toi_2": p[prev_season2]["avg_toi"],
+            "plus_minus_2": p[prev_season2]["plus_minus"],
+            "games_played_2": p[prev_season2]["games_played"],
         })
 
-        # IMPORTANT: this is just a label (not used in training input)
-        data["season_3"] = "20242025"
+        data["season_3"] = prediction_season
 
         pred_data.append(data)
 
     return pred_data
 
-def predict_20242025():
+def predict_year_ppg(season_to_predict):
     conn = get_sqlite_conn()
 
-    rows = load_prediction_players(conn)
+    rows = load_prediction_players(conn, season_to_predict)
+  
     players = build_player_dict(rows)
 
-    df = pd.DataFrame(get_prediction_data(players))
-
-    print(df)
+    df = pd.DataFrame(get_prediction_data(players, season_to_predict))
+    # print(df)
 
     df = process_data(df)
 
@@ -247,13 +242,21 @@ def predict_20242025():
 
     df_pred_final = normalize_data(df_pred_final)
 
+    cols = ['games_played_1', 'games_played_2', 'goals_1', 'goals_2', 'height',
+       'plus_minus_1', 'plus_minus_2', 'shots_1', 'shots_2', 'avg_toi_1',
+       'avg_toi_2', 'weight', 'points_1', 'points_2', 'age', 'position_C',
+       'position_D', 'position_L', 'position_R']
+    
     df_pred_final = df_pred_final.reindex(
-        columns=x_train.columns,
+        columns=cols,
         fill_value=0
     )
 
     print(df_pred_final)
 
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    model_path = os.path.join(BASE_DIR, "nhl_ppg_model.pkl")
+    model = joblib.load(model_path)
     pred_ppg = model.predict(df_pred_final)
 
     predictions = pd.DataFrame({
@@ -264,8 +267,9 @@ def predict_20242025():
 
     predictions[["first_name", "last_name"]] = predictions["name"].str.split(" ", n=1, expand=True)
 
-    save_predictions(conn, predictions)
+    save_predictions(conn, predictions, season_to_predict)
 
     print(predictions.sort_values(by="ppg"))
 
-print(get_all_predictions(get_sqlite_conn()))
+# predict_year_ppg("20192020")
+
