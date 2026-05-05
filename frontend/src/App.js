@@ -19,11 +19,3 @@ function App() {
     )
 }
 export default App;
-
-// If it fetches data → page
-
-// If it’s reused → component
-
-// If it talks to backend → service
-
-// If it wires routes → App

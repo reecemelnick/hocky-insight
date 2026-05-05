@@ -6,8 +6,6 @@ import requests
 import re
 import sqlite3
 
-print("in player data")
-
 def get_prediction_data(player_stats):
     pred_data = []
     for player in player_stats:
