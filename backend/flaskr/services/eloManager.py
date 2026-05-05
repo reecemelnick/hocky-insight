@@ -1,4 +1,4 @@
-from flaskr.db import get_db, reset_elo_helper
+from flaskr.db import get_db
 from datetime import date, timedelta
 from flaskr.services.scores import ScoreManager
 from flaskr.services.eloRetriever import EloRetriever
@@ -70,8 +70,6 @@ class EloManager:
     def set_elo_from_season_start(self):
         season_start = date(2025, 10, 11)
         end_date = date.today()
-
-        reset_elo_helper() # make sure teams start back at base elo
 
         curr_date = season_start
         while curr_date <= end_date:
