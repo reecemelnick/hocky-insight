@@ -15,7 +15,7 @@ Team Rankings
 
 Explore team power rankings based on ELO ratings and compare them with official NHL standings. This provides an alternative perspective on team strength and consistency.
 
-About
+# About
 
 Hockey Insight combines historical NHL data with ELO-based ranking systems to generate predictive analytics for both teams and players. Machine learning models are trained on multiple seasons of data to forecast player point production and evaluate team performance over time.
 
