@@ -7,15 +7,15 @@ Game Scores
 
 View NHL game results for any selected date. The platform displays match outcomes alongside team ELO ratings, allowing users to analyze performance in context.
 
-# Player Predictions
+Player Predictions
 
 Analyze predicted player performance for the 2024–2025 season. Compare projected points per game with actual statistics to evaluate model accuracy and player trends.
 
-# Team Rankings
+Team Rankings
 
 Explore team power rankings based on ELO ratings and compare them with official NHL standings. This provides an alternative perspective on team strength and consistency.
 
-# About
+About
 
 Hockey Insight combines historical NHL data with ELO-based ranking systems to generate predictive analytics for both teams and players. Machine learning models are trained on multiple seasons of data to forecast player point production and evaluate team performance over time.
 
