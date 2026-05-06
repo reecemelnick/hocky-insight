@@ -2,7 +2,9 @@ from flaskr.db import get_db
 
 class PpgPredictRetriever:
 
-    def get_ppg_predictions(self):
+    def get_ppg_predictions(self, page, page_size=10):
+        # Hard cap: never fetch more than 10 players at a time
+        page_size = min(page_size, 10)
         conn = get_db()
         cursor = conn.cursor()
 
@@ -19,7 +21,8 @@ class PpgPredictRetriever:
                 ON pp.player_id = ps.player_id
                 AND ps.season = '20242025'
             ORDER BY pp.predicted_ppg DESC
-        """)
+            LIMIT ? OFFSET ?
+        """, (page_size, (page - 1) * page_size))
 
         rows = cursor.fetchall()
 

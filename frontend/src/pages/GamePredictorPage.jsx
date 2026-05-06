@@ -6,10 +6,10 @@ function GamePredictorPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
-    const playersPerPage = 10;
 
     useEffect(() => {
-        fetchPrediction()
+        setLoading(true);
+        fetchPrediction(currentPage)
             .then((data) => {
                 setPredictions(data || []);
                 setError("");
@@ -21,12 +21,7 @@ function GamePredictorPage() {
             .finally(() => {
                 setLoading(false);
             });
-    }, []);
-
-    const startIndex = (currentPage - 1) * playersPerPage;
-    const endIndex = startIndex + playersPerPage;
-    const displayedPlayers = predictions.slice(startIndex, endIndex);
-    const totalPages = Math.ceil(predictions.length / playersPerPage);
+    }, [currentPage]);
 
     return (
         <div className="min-h-screen bg-slate-950 px-4 py-10 text-slate-100 sm:px-6 lg:px-8">
@@ -40,7 +35,7 @@ function GamePredictorPage() {
                             </h1>
                         </div>
                         <div className="rounded-2xl border border-cyan-500/20 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-100">
-                            {predictions.length} players ({currentPage} of {totalPages})
+                            Page {currentPage}
                         </div>
                     </div>
                 </div>
@@ -71,7 +66,7 @@ function GamePredictorPage() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-800">
-                                    {displayedPlayers.map((player, index) => {
+                                    {predictions.map((player, index) => {
                                         const actualPpg = player.ppg == null ? null : Number(player.ppg);
                                         const predictedPpg = player.predicted_ppg == null ? null : Number(player.predicted_ppg);
                                         const delta = actualPpg == null || predictedPpg == null ? null : actualPpg - predictedPpg;
@@ -97,16 +92,16 @@ function GamePredictorPage() {
 
                         <div className="flex items-center justify-between border-t border-slate-800 bg-slate-950/60 px-6 py-4">
                             <button
-                                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                                 disabled={currentPage === 1}
                                 className="rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 Previous
                             </button>
-                            <span className="text-sm text-slate-400">Page {currentPage} of {totalPages}</span>
+                            <span className="text-sm text-slate-400">Page {currentPage}</span>
                             <button
-                                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                                disabled={currentPage === totalPages || totalPages === 0}
+                                onClick={() => setCurrentPage((prev) => prev + 1)}
+                                disabled={predictions.length < 10}
                                 className="rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 Next
