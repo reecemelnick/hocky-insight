@@ -1,5 +1,3 @@
-
-
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, root_mean_squared_error
@@ -119,6 +117,9 @@ def load_prediction_players(conn, prediction_season):
     prev_season1 = get_prev_season(prediction_season, 1)
     prev_season2 = get_prev_season(prediction_season, 2)
 
+    print(prev_season1)
+    print(prev_season2)
+
     cur.execute("""
         SELECT 
             p.player_id,
@@ -220,7 +221,7 @@ def predict_year_ppg(season_to_predict):
     players = build_player_dict(rows)
 
     df = pd.DataFrame(get_prediction_data(players, season_to_predict))
-    # print(df)
+    print(df)
 
     df = process_data(df)
 
@@ -271,5 +272,5 @@ def predict_year_ppg(season_to_predict):
 
     print(predictions.sort_values(by="ppg"))
 
-# predict_year_ppg("20192020")
+predict_year_ppg("20262027")
 

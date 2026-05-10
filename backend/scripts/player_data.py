@@ -5,7 +5,7 @@ import pandas as pd
 import requests
 import re
 import sqlite3
-
+    
 def get_prediction_data(player_stats):
     pred_data = []
     for player in player_stats:
@@ -364,6 +364,7 @@ def get_age_from_date():
 
 # once ready take in df
 def process_data(df):
+    print(df)
     df["points_1"] = (df["goals_1"] + df["assists_1"]) / df["games_played_1"]
     df["points_2"] = (df["goals_2"] + df["assists_2"]) / df["games_played_2"]
     df["goals_1"] = df["goals_1"] / df["games_played_1"]
