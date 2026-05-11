@@ -25,7 +25,7 @@ function LandingPage() {
     return (
         <div className="min-h-screen bg-slate-950 px-4 py-10 text-slate-100 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-6xl space-y-12">
-                {/* Hero Section */}
+            
                 <div className="space-y-6 text-center">
                     <div className="space-y-2">
                         <p className="text-sm font-semibold uppercase tracking-[0.3em] text-cyan-400">Welcome to</p>
@@ -52,7 +52,7 @@ function LandingPage() {
                     </div>
                 </div>
 
-                {/* Features Grid */}
+                
                 <div className="grid gap-6 md:grid-cols-3">
                     {features.map((feature) => (
                         <Link
@@ -76,7 +76,7 @@ function LandingPage() {
                     ))}
                 </div>
 
-                {/* Info Section */}
+                
                 <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-8 shadow-2xl shadow-sky-950/30 backdrop-blur">
                     <h2 className="text-2xl font-bold text-white mb-4">About Hockey Insight</h2>
                     <div className="space-y-3 text-slate-300">

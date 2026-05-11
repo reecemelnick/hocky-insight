@@ -13,6 +13,9 @@ function GamePredictorPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const [season, setSeason] = useState("20262027");
 
+    const [sortBy, setSortBy] = useState("predicted_ppg");
+    const [sortDirection, setSortDirection] = useState("asc");
+
     useEffect(() => {
         setLoading(true);
         fetchPrediction(currentPage, season)
@@ -33,6 +36,16 @@ function GamePredictorPage() {
         setSeason(e.target.value)
     };
 
+    const handleSortChange = (value) => {
+        setSortBy(value);
+        console.log(`Sort By: ${sortBy}\nDirection: ${sortDirection}`)
+    };
+
+    const toggleDirection = () => {
+        setSortDirection(prev => (prev === "asc" ? "desc" : "asc"));
+        console.log(`Sort By: ${sortBy}\nDirection: ${sortDirection}`)
+    };
+
     return (
         <div className="min-h-screen bg-slate-950 px-4 py-10 text-slate-100 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-6xl space-y-6">
@@ -41,11 +54,11 @@ function GamePredictorPage() {
 
                 {loading && <PredictionLoading />}
 
-                {error && <ErrorCard error={error}/>}
+                {error && <ErrorCard error={error} />}
 
                 {!loading && !error && (
                     <div className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/80 shadow-2xl shadow-sky-950/20">
-                        <PredictionTable predictions={predictions} season={season} />
+                        <PredictionTable predictions={predictions} season={season} handleSortChange={handleSortChange} toggleDirection={toggleDirection} sortBy={sortBy} />
                         <PredictionPaginationControls currentPage={currentPage} setCurrentPage={setCurrentPage} predictions={predictions} />
                     </div>
                 )}
