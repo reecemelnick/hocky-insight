@@ -8,6 +8,7 @@ ppg_retriever = PpgPredictRetriever()
 @bp.route("/predict", methods=["GET"])
 def predict():
     page = int(request.args.get("page", 1))
-    result = ppg_retriever.get_ppg_predictions(page)
+    season = request.args.get("season", "20262027")
+    result = ppg_retriever.get_ppg_predictions(page, season)
     return result, 200
     

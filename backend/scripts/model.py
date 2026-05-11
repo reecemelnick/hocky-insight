@@ -272,5 +272,5 @@ def predict_year_ppg(season_to_predict):
 
     print(predictions.sort_values(by="ppg"))
 
-predict_year_ppg("20262027")
+predict_year_ppg("20252026")
 
