@@ -22,7 +22,7 @@ function NavigationBar() {
                         </div>
                     </Link>
 
-                    <div className="flex gap-1">
+                    <div className="flex gap-1 overflow-x-auto no-scrollbar">
                         {navItems.map((item) => (
                             <Link
                                 key={item.path}

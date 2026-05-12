@@ -2,18 +2,20 @@ import { useEffect, useState } from "react";
 import GameCard from "../components/GameCard";
 import DateSelector from "../components/DateSelector";
 import { fetchScores } from "../services/ScoresApi";
+import ScorePageHeader from "../components/ScorePageHeader";
 
 function ScoresPage() {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    const formattedDate = yesterday.toISOString().split("T")[0];
+    const maxDate = yesterday.toISOString().split("T")[0];
+    const minDate = '1990-10-10';
 
     const [games, setGames] = useState([]);
-    const [date, setDate] = useState(formattedDate);
     const [userMessage, setUserMessage] = useState("");
+    const [selectedDate, setSelectedDate] = useState(maxDate);
 
     useEffect(() => {
-        fetchScores(date)
+        fetchScores(selectedDate)
             .then((data) => {
                 if (!data || data.length === 0) {
                     setUserMessage("No games today")
@@ -24,24 +26,18 @@ function ScoresPage() {
                 }
             })
             .catch((err) => console.error(err));
-    }, [date]);
+    }, [selectedDate]);
+
+    const handleDateChange = (e) => {
+        setSelectedDate(e.target.value);
+    };
 
     return (
-        <div className="min-h-screen bg-slate-950 px-4 py-10 text-slate-100 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-slate-950 overflow-hidden px-4 py-10 text-slate-100 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-6xl space-y-6">
-                <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-6 shadow-2xl shadow-sky-950/30 backdrop-blur">
-                    <div>
-                        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-cyan-400">NHL Scores</p>
-                        <h1 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-                            Game Results
-                        </h1>
-                        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">
-                            View scores and results for NHL games
-                        </p>
-                    </div>
-                </div>
+                <ScorePageHeader />
 
-                <DateSelector onDateChange={setDate} />
+                <DateSelector onDateChange={handleDateChange} selectedDate={selectedDate} minDate={minDate} maxDate={maxDate} />
 
                 {userMessage && (
                     <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-6 text-center text-slate-300 shadow-xl shadow-sky-950/20">

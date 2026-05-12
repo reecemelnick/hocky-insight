@@ -1,20 +1,4 @@
-import React, { useState } from "react";
-
-function DateSelector({ onDateChange }) {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const maxDate = yesterday.toISOString().split("T")[0];
-
-    const minDate = "2022-10-07";
-
-    const [selectedDate, setSelectedDate] = useState(maxDate);
-
-    const handleChange = (event) => {
-        setSelectedDate(event.target.value);
-        if (onDateChange) {
-            onDateChange(event.target.value);
-        }
-    };
+function DateSelector({ onDateChange, selectedDate, minDate, maxDate }) {
 
     return (
         <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-6 shadow-2xl shadow-sky-950/20">
@@ -27,7 +11,7 @@ function DateSelector({ onDateChange }) {
                 value={selectedDate}
                 min={minDate}   
                 max={maxDate}  
-                onChange={handleChange}
+                onChange={onDateChange}
                 className="mt-3 block w-full rounded-lg border border-slate-700 bg-slate-900/60 px-4 py-3 text-white placeholder-slate-500 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20"
             />
         </div>
