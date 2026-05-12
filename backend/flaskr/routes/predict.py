@@ -9,6 +9,8 @@ ppg_retriever = PpgPredictRetriever()
 def predict():
     page = int(request.args.get("page", 1))
     season = request.args.get("season", "20262027")
-    result = ppg_retriever.get_ppg_predictions(page, season)
+    sort_by = request.args.get("sort", "predicted_ppg")
+    order = request.args.get("order", "DESC")
+    result = ppg_retriever.get_ppg_predictions(page, season, sort_by, order)
     return result, 200
     

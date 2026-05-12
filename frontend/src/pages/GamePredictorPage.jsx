@@ -14,11 +14,12 @@ function GamePredictorPage() {
     const [season, setSeason] = useState("20262027");
 
     const [sortBy, setSortBy] = useState("predicted_ppg");
-    const [sortDirection, setSortDirection] = useState("asc");
+    const [sortDirection, setSortDirection] = useState("DESC");
 
     useEffect(() => {
+        console.log(`Sort By: ${sortBy}\nDirection: ${sortDirection}`)
         setLoading(true);
-        fetchPrediction(currentPage, season)
+        fetchPrediction(currentPage, season, sortBy, sortDirection)
             .then((data) => {
                 setPredictions(data || []);
                 setError("");
@@ -30,7 +31,7 @@ function GamePredictorPage() {
             .finally(() => {
                 setLoading(false);
             });
-    }, [currentPage, season]);
+    }, [currentPage, season, sortBy, sortDirection]);
 
     const handleSeasonChange = (e) => {
         setSeason(e.target.value)
@@ -38,12 +39,12 @@ function GamePredictorPage() {
 
     const handleSortChange = (value) => {
         setSortBy(value);
-        console.log(`Sort By: ${sortBy}\nDirection: ${sortDirection}`)
+        // console.log(`Sort By: ${sortBy}\nDirection: ${sortDirection}`)
     };
 
     const toggleDirection = () => {
-        setSortDirection(prev => (prev === "asc" ? "desc" : "asc"));
-        console.log(`Sort By: ${sortBy}\nDirection: ${sortDirection}`)
+        setSortDirection(prev => (prev === "ASC" ? "DESC" : "ASC"));
+        // console.log(`Sort By: ${sortBy}\nDirection: ${sortDirection}`)
     };
 
     return (
@@ -58,7 +59,7 @@ function GamePredictorPage() {
 
                 {!loading && !error && (
                     <div className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/80 shadow-2xl shadow-sky-950/20">
-                        <PredictionTable predictions={predictions} season={season} handleSortChange={handleSortChange} toggleDirection={toggleDirection} sortBy={sortBy} />
+                        <PredictionTable predictions={predictions} season={season} handleSortChange={handleSortChange} toggleDirection={toggleDirection} sortBy={sortBy} sortDirection={sortDirection} />
                         <PredictionPaginationControls currentPage={currentPage} setCurrentPage={setCurrentPage} predictions={predictions} />
                     </div>
                 )}
