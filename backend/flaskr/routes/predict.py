@@ -11,6 +11,7 @@ def predict():
     season = request.args.get("season", "20262027")
     sort_by = request.args.get("sort", "predicted_ppg")
     order = request.args.get("order", "DESC")
-    result = ppg_retriever.get_ppg_predictions(page, season, sort_by, order)
+    position = request.args.get("position", "all")
+    result = ppg_retriever.get_ppg_predictions(page, season, sort_by, order, position)
     return result, 200
     

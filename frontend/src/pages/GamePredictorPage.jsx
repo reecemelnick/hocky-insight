@@ -12,14 +12,13 @@ function GamePredictorPage() {
     const [error, setError] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [season, setSeason] = useState("20262027");
-
     const [sortBy, setSortBy] = useState("predicted_ppg");
     const [sortDirection, setSortDirection] = useState("DESC");
+    const [position, setPosition] = useState("all");
 
     useEffect(() => {
-        console.log(`Sort By: ${sortBy}\nDirection: ${sortDirection}`)
         setLoading(true);
-        fetchPrediction(currentPage, season, sortBy, sortDirection)
+        fetchPrediction(currentPage, season, sortBy, sortDirection, position)
             .then((data) => {
                 setPredictions(data || []);
                 setError("");
@@ -31,7 +30,11 @@ function GamePredictorPage() {
             .finally(() => {
                 setLoading(false);
             });
-    }, [currentPage, season, sortBy, sortDirection]);
+    }, [currentPage, season, sortBy, sortDirection, position]);
+
+    const handlePositionChange = (position) => {
+        setPosition(position)
+    };
 
     const handleSeasonChange = (e) => {
         setSeason(e.target.value)
@@ -39,19 +42,17 @@ function GamePredictorPage() {
 
     const handleSortChange = (value) => {
         setSortBy(value);
-        // console.log(`Sort By: ${sortBy}\nDirection: ${sortDirection}`)
     };
 
     const toggleDirection = () => {
         setSortDirection(prev => (prev === "ASC" ? "DESC" : "ASC"));
-        // console.log(`Sort By: ${sortBy}\nDirection: ${sortDirection}`)
     };
 
     return (
         <div className="min-h-screen bg-slate-950 px-4 py-10 text-slate-100 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-6xl space-y-6">
                 
-                <GamePredictorHeader season={season} handleSeasonChange={handleSeasonChange} currentPage={currentPage} />
+                <GamePredictorHeader season={season} handleSeasonChange={handleSeasonChange} currentPage={currentPage} position={position} handlePositionChange={handlePositionChange} />
 
                 {loading && <PredictionLoading />}
 

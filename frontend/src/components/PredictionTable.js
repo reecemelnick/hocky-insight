@@ -31,7 +31,7 @@ function PredictionTable( { predictions, season, handleSortChange, toggleDirecti
           <tbody className="divide-y divide-slate-800">
               {predictions.map((player, index) => {
                   return (
-                    <PredictionTableRow player={player} key={index} />
+                    <PredictionTableRow player={player} key={player.player_id} index={index} />
                   );
               })}
           </tbody>
