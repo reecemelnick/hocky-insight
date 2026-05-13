@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from ..services.scores import ScoreManager 
 
 bp = Blueprint("scores", __name__)
@@ -10,11 +10,11 @@ score_manager = ScoreManager()
 def scores():
     date = request.args.get("date")
     if date is None:
-        return {"error": "date is required"}, 400
+        return jsonify({"error": "date is required"}), 400
     
     score_data = score_manager.get_scores_specific_date(date)
     # no games played on this date
     if score_data is None:
-        return [], 200
+        return jsonify([]), 200
 
-    return score_data, 200 # games were played on this date
+    return jsonify(score_data), 200 # games were played on this date
