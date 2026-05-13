@@ -36,7 +36,6 @@ function ScoresPage() {
         <div className="min-h-screen bg-slate-950 overflow-hidden px-4 py-10 text-slate-100 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-6xl space-y-6">
                 <ScorePageHeader />
-
                 <DateSelector onDateChange={handleDateChange} selectedDate={selectedDate} minDate={minDate} maxDate={maxDate} />
 
                 {userMessage && (
